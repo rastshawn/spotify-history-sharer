@@ -1,0 +1,12 @@
+make an API endpoint that returns Spotify's last 50, for a web widget
+	Connect app with oAuth hosting an admin page
+	Serve as a get endpoint via https
+
+make a database of each song/listen/date 
+	calculate top 40 by week
+	maybe poll servers every 10 minutes? Can it work via push?
+	make a database for holding
+	
+future: 
+	Maybe host a site that does this for people? 
+	

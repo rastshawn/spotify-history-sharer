@@ -1,0 +1,11 @@
+{
+  "name": "spotify-widget-server",
+  "version": "0.0.1",
+  "description": "Server that connects to a spotify account in order to make a publicly-accessible API for a user's most recent 50 listens.",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodejs index.js -test"
+  },
+  "author": "Shawn Rast rastshawn@gmail.com",
+  "license": "ISC"
+}
