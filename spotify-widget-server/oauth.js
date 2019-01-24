@@ -1,5 +1,5 @@
-module.exports = {
-    getAuthToken: function() {
+module.exports = function (app, request) {
+    this.getAuthToken = function() {
         
         let clientID = ''; // must be passed in
         let clientSecret = ''; // same
@@ -18,42 +18,59 @@ module.exports = {
             );
         });
 
-        app.get('/saveCode', (req, res) => {
-            // access code is in query string
-            // ?code=fesjklfjseklveiojes&state=asefiojvjekls
-            let url = '';
-            let accessCode = '';
-            
-            if (url.indexOf('error') > 1) {
-                // figure out what to do if user denies application
-                // TODO
-            }
-            
-            // get token
-            let call = {
-                url : 'https://accounts.spotify.com/api/token',
-                headers: {
-                    'Authorization' : 'Basic ' + base64ClientIDSecret()
-                    'type' : 'application/x-www-form-urlencoded'
-                },
-                body: {
-                    'grant_type': 'authorization_code',
-                    'code' : accessCode,
-                    'redirect_uri' : redirectURI,
+
+        // this is probably bad practice.
+        // Probably make a authConfirmed() event instead
+        return new Promise((resolve, reject) => {
+
+            app.get('/saveCode', (req, res) => {
+                // access code is in query string
+                // ?code=fesjklfjseklveiojes&state=asefiojvjekls
+                let url = '';
+                let accessCode = '';
+                
+                if (url.indexOf('error') > 1) {
+                    // figure out what to do if user denies application
+                    // TODO
                 }
-            };
+                
+                // get token
+                let call = {
+                    url : 'https://accounts.spotify.com/api/token',
+                    headers: {
+                        'Authorization' : 'Basic ' + base64ClientIDSecret(),
+                        'type' : 'application/x-www-form-urlencoded'
+                    },
+                    body: {
+                        'grant_type': 'authorization_code',
+                        'code' : accessCode,
+                        'redirect_uri' : redirectURI,
+                    }
+                };
+                
+    
+                post(call, (response, body, error) => {
+                    if (error) {
+                        // TODO
+                    }
+    
+                    let ret = {
+                        'accessToken' : body.access_token,
+                        'expiresIn' : body.expires_in, // num seconds 
+                        'refreshToken' : body.refresh_token // for getting new tokens
+                    };
+    
+                    resolve(ret);
+                });
+    
+            });    
 
-            post(call, (response, body, error) => {
-                let accessToken = body.access_token;
-                let expiresIn = body.expires_in; // num seconds 
-                let refreshToken = body.refresh_token; // for getting new tokens
 
-            });
-            
-        }):
-    },
+        
+        });
+    };
 
-    renewToken: function(refreshToken) {
+    this.renewToken = function(refreshToken) {
         // call /api/token with refresh token
 
         let call = {
@@ -86,6 +103,6 @@ module.exports = {
         });
         
 
-    }
+    };
 
 };

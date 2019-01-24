@@ -7,5 +7,13 @@
     "test": "nodejs index.js -test"
   },
   "author": "Shawn Rast rastshawn@gmail.com",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "body-parser": "^1.18.3"
+  },
+  "dependencies": {
+    "express": "^4.16.4",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2"
+  }
 }
