@@ -1,9 +1,10 @@
 module.exports = function (app, request) {
     this.getAuthToken = function() {
         
-        let clientID = ''; // must be passed in
-        let clientSecret = ''; // same
+        let clientID = app.clientID; // must be passed in
+        let clientSecret = app.clientSecret; // same
         let scope = 'user-read-recently-played';
+        let host = app.host;
         // for top add user-top-read with %20 as space
         // for currently playing add user-read-currently-playing
         let redirectURI = host + '/authorize';
