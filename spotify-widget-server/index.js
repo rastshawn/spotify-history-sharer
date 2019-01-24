@@ -34,6 +34,13 @@ if (!app.clientSecret || !app.clientID) {
     console.log("nodejs index.js clientID=asfeijklsfe secret=sefjklfesjkl");
     process.exit();
 }
-let oauth = new (require('./oauth'))(app, request);
 
-oauth.getAuthToken();
+
+
+test();
+
+function test() {
+    let oauth = new (require('./oauth'))(app, request);
+
+    oauth.getAuthToken();
+};
