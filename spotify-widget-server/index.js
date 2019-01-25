@@ -36,14 +36,26 @@ if (!app.clientSecret || !app.clientID) {
     process.exit();
 }
 
+const spotifyInterface = new (require('./spotifyInterface'))(rp);
 
 
 test();
 
+let userObj = {};
+
 function test() {
     let oauth = new (require('./oauth'))(app, request);
 
-    oauth.getAuthToken().then((response) => {
-        console.log(response);
+    oauth.getAuthToken().then((authObj) => {
+        userObj = {
+            'authObj': authObj
+        };
     });
 };
+
+app.get('/last50', (req, res) => {
+    spotifyInterface.getLast50Songs(userObj)
+        .then((response) => {
+            res.send(response);
+        });
+});
