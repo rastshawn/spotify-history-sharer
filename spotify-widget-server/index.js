@@ -1,8 +1,12 @@
 
 const express = require('express');
+const session = require('express-session');
 const app = express();
 const port = 6001;
 
+app.users = [];
+
+app.use(session({secret: 'changeme'}));
 app.listen(port, () => {
     console.log(`server listening on ${port}`);
 });
@@ -36,14 +40,22 @@ if (!app.clientSecret || !app.clientID) {
     process.exit();
 }
 
+const spotifyInterface = new (require('./spotifyInterface'))(rp);
+
+const accountManager = new (require('./account'))(app, request);
 
 
-test();
 
-function test() {
-    let oauth = new (require('./oauth'))(app, request);
+let oauth = new (require('./oauth'))(app, request);
 
-    oauth.getAuthToken().then((response) => {
-        console.log(response);
-    });
-};
+
+
+app.get('/users/:userID/last50', (req, res) => {
+    spotifyInterface.getLast50Songs(app.users[req.params.userID])
+        .then((response) => {
+            res.send(response);
+        })
+        .catch((err) => {
+            res.send(err);
+        });
+});
