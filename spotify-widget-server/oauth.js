@@ -1,10 +1,11 @@
 const base64 = require('base-64'); // required for combining client secret and id for spotify auth
-
+const acc = require('./account');
 
 
 module.exports = function (app, request, users) {
-
     
+    const account = new acc(app, request);
+
     let clientID = app.clientID; // must be passed in
     let clientSecret = app.clientSecret; // same
     let scope = 'user-read-recently-played';
@@ -17,18 +18,34 @@ module.exports = function (app, request, users) {
     // First step in oAuth process. To get access code (for getting auth token)
     // make page for user to click 'allow' on, then wait for spotify to call server with auth code
     app.get('/authorize', (req, res) => {
-        console.log(req.session);
+        let showLogin = false;
+        // check to see users' auth status
+        if (req.session.idtoken) {
+            account.checkAuth(req.session).then((userID) => {
+                if (userID) {
+                    // authenticated, so connect spotify account
+                    // TODO check if account is already authorized. It's harmless to skip
+                    // but could save users time
 
-        if (req.session.userID) {
-            res.redirect('https://accounts.spotify.com/authorize' +
-                '?response_type=code' +
-                '&client_id=' + clientID +
-                '&state=' + req.session.userID +
-                '&scope=' + scope +
-                '&show_dialog=true' +
-                '&redirect_uri=' + encodeURIComponent(redirectURI)
-            );
+                    // for now, just always go through auth process
+                    res.redirect('https://accounts.spotify.com/authorize' +
+                        '?response_type=code' +
+                        '&client_id=' + clientID +
+                        '&state=' + userID +
+                        '&scope=' + scope +
+                        '&show_dialog=true' +
+                        '&redirect_uri=' + encodeURIComponent(redirectURI)
+                    );
+                } else {
+                    showLogin = true;
+                }
+            });
+            
         } else {
+            showLogin = true;
+        }
+        
+        if (showLogin) {
             res.redirect('/login');
         }
 
@@ -39,7 +56,7 @@ module.exports = function (app, request, users) {
         // this is the callback from spotify
     app.get('/saveCode', (req, res) => {
         // access code is in query string
-        // ?code=fesjklfjseklveiojes&state=asefiojvjekls
+        // ?code=fesjklfjseklveiojes&state=userID
         
         
         // strip the code from the request url
@@ -51,6 +68,7 @@ module.exports = function (app, request, users) {
             // figure out what to do if user denies application
             // TODO
             console.error('user denied auth');
+            res.send('access denied');
             return;
         }
         

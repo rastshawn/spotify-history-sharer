@@ -6,7 +6,14 @@ const port = 6001;
 
 app.users = [];
 
-app.use(session({secret: 'changeme'}));
+app.use(session({
+    secret: 'changeme',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        //secure: true // uncomment when running on https
+    }
+}));
 app.listen(port, () => {
     console.log(`server listening on ${port}`);
 });
