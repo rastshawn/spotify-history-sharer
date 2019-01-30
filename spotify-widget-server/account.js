@@ -44,7 +44,7 @@ module.exports = function(app, request) {
             body = JSON.parse(body);
             if (body.sub) {
                 // token is good
-                console.log(body.sub);
+                
                 // req.session.userID = body.sub; this is probably insecure. Use ID Token instead
                 req.session.idtoken = req.body.idtoken; // used for future auth requests
                 app.users[body.sub] = new User({"userID" : body.sub});

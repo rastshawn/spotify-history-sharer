@@ -125,20 +125,20 @@ module.exports = function (app, request, users) {
         let call = {
             url: 'https://accounts.spotify.com/api/token',
             headers: {
-                'Authorization' : 'Basic ' + base64.encode(app.clientID + app.clientSecret),
-                'type' : 'application/x-www-form-urlencoded'
+                'Authorization' : 'Basic ' + (new Buffer(app.clientID + ':' + app.clientSecret).toString('base64'))
             },
-            body: {
+            form: {
                 'grant_type' : 'refresh_token',
                 'refresh_token' : refreshToken
-            }
+            },
+            json: true
         }
         
         return new Promise((resolve, reject) => {
 
-            request.post(call, (response, body, error) => {
-                if (error) {
-                    // TODO
+            request.post(call, (err, httpResponse, body) => {
+                if (err) {
+                    reject(err);
                 }
 
                 let ret = {
@@ -147,6 +147,7 @@ module.exports = function (app, request, users) {
                     'refreshToken' : body.refresh_token // for getting new tokens
                 };
 
+                // refreshToken will be undefined unless the backend sends a new one
                 resolve(ret);
             });
 

@@ -6,6 +6,13 @@ make a database of each song/listen/date
 	calculate top 40 by week
 	maybe poll servers every 10 minutes? Can it work via push?
 	make a database for holding
+
+make a task manager class that makes a schedule:
+	manage Spotify account auth token refresh calls
+	automatically call /last50 for each user in db every 25 minutes 
+		(must be at least 30s per song for Spotify to count it as played, 50songs*30seconds = 25 mins)
+
+
 	
 future: 
 	Maybe host a site that does this for people? 

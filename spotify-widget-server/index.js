@@ -17,8 +17,16 @@ process.argv.forEach((arg) => {
         app.clientSecret = arg.substr(7);
     } else if (arg.indexOf('session') > -1){
         app.sessionSecret = arg.substr(8);
+    } else if (arg.indexOf('testID') > -1){
+        app.testID = arg.substr(7);
     }
 });
+
+if (!app.clientSecret || !app.clientID || !app.sessionSecret) {
+    console.log("You must specify a clientID, clientSecret, and session secret.")
+    console.log("nodejs index.js clientID=asfeijklsfe secret=sefjklfesjkl session=asdfjkles");
+    process.exit();
+}
 
 
 app.users = [];
@@ -48,11 +56,6 @@ const rp = require('request-promise');
 
 
 
-if (!app.clientSecret || !app.clientID) {
-    console.log("You must specify a clientID and clientSecret.")
-    console.log("nodejs index.js clientID=asfeijklsfe secret=sefjklfesjkl");
-    process.exit();
-}
 
 const spotifyInterface = new (require('./spotifyInterface'))(rp);
 
@@ -73,3 +76,19 @@ app.get('/users/:userID/last50', (req, res) => {
             res.send(err);
         });
 });
+
+test();
+function test() {
+    app.get('/refresh', (req, res) => {
+        oauth.renewToken(app.users[app.testID].authObj.refreshToken).then((ret) => {
+            //console.log(ret);
+            res.send(ret);
+
+            app.users[app.testID].authObj.accessToken = ret.accessToken;
+
+        }).catch((err) => {
+            console.log(err);
+            res.send(ret);
+        });
+    });
+}
