@@ -1,0 +1,10 @@
+Tasks for setup:
+
+Make the database:
+    mysql, running localhost
+    must create a user - one user handles both the session store and the user info db. 
+
+Register a Spotify application:
+
+Register a Google application:
+

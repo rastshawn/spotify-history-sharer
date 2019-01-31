@@ -12,6 +12,9 @@ make a task manager class that makes a schedule:
 	automatically call /last50 for each user in db every 25 minutes 
 		(must be at least 30s per song for Spotify to count it as played, 50songs*30seconds = 25 mins)
 
+https://www.reddit.com/r/learnprogramming/comments/2k30yt/how_do_i_properly_citegive_credit_for_code_used/
+
+set up https on server
 
 	
 future: 
