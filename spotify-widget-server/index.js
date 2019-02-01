@@ -21,7 +21,7 @@ class Arg {
     }
 
     bind(valueString) {
-        let value = valueString.substr(this.argName.length);
+        let value = valueString.substr(this.argName.length+1);
         this.bindVariable[this.variableName] = value;
         this.fulfilled = true;
     };
@@ -76,10 +76,21 @@ let mysqlOptions = {
 };
 
 const databaseConnection = mysql.createConnection(mysqlOptions);
+//databaseConnection.connect();
+
 const sessionStore = new MySQLStore({
         // options, read here:
         // https://www.npmjs.com/package/express-mysql-session
-
+		schema: {
+			tableName: 'sessions',
+			columnNames: {
+				session_id: 'sessionID',
+				expires: 'expires',
+				data: 'data'
+			}
+		},
+		charset: 'utf8mb4_bin',
+		createDatabaseTable: true
     },
     databaseConnection);
 app.use(session({
