@@ -10,24 +10,51 @@ app.clientSecret = '';
 
 app.sessionSecret = '';
 
-process.argv.forEach((arg) => {
-    if (arg.indexOf('clientID') > -1){
-        app.clientID = arg.substr(9);
-    } else if (arg.indexOf('secret') > -1){
-        app.clientSecret = arg.substr(7);
-    } else if (arg.indexOf('session') > -1){
-        app.sessionSecret = arg.substr(8);
-    } else if (arg.indexOf('testID') > -1){
-        app.testID = arg.substr(7);
+class Arg {
+    constructor(argName, variableName, bindVariable) {
+        this.argName = argName;
+        this.variableName = variableName;
+        this.bindVariable = bindVariable;
+        
+        this.fulfilled = false;
     }
 
-    // TODO rewrite this function
-    // to create one that does this that takes an array of 
-    // parameters to watch for
+    bind(valueString) {
+        let value = valueString.substr(this.argName.length);
+        this.bindVariable[this.variableName] = value;
+        this.fulfilled = true;
+    };
+}
 
-    // and closes the app if any one is absent
+let dbCreds = {};
+
+let args = [
+    new Arg('clientID', 'clientID', app),
+    new Arg('secret', 'clientSecret', app),
+    new Arg('session', 'sessionSecret', app),
+    new Arg('testID', 'testID', app),
+    new Arg('dbUser', 'username', dbCreds),
+    new Arg('dbPass', 'password', dbCreds)
+];
+
+
+
+args.forEach((argObj) => {
+    process.argv.forEach((arg) => {
+        if (arg.indexOf(argObj.argName) > -1){
+            argObj.bind(arg);
+        }
+        
+    });
+
+    if (!argObj.fulfilled) {
+       // app.close();
+       console.log(`${argObj.argName} must be passed`);
+       process.exit();
+    }
 });
 
+/*
 if (!app.clientSecret || !app.clientID || !app.sessionSecret) {
     console.log("You must specify a clientID, clientSecret, and session secret.")
     console.log("nodejs index.js clientID=asfeijklsfe secret=sefjklfesjkl session=asdfjkles");
@@ -35,6 +62,7 @@ if (!app.clientSecret || !app.clientID || !app.sessionSecret) {
     // print the missing arg
     process.exit();
 }
+*/
 
 const mysql = require('mysql');
 const MySQLStore = require('express-mysql-session')(session);
