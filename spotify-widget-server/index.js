@@ -11,10 +11,11 @@ app.clientSecret = '';
 app.sessionSecret = '';
 
 class Arg {
-    constructor(argName, variableName, bindVariable) {
+    constructor(argName, variableName, bindVariable, optional) {
         this.argName = argName;
         this.variableName = variableName;
         this.bindVariable = bindVariable;
+        this.optional = optional;
         
         this.fulfilled = false;
     }
@@ -32,7 +33,7 @@ let args = [
     new Arg('clientID', 'clientID', app),
     new Arg('secret', 'clientSecret', app),
     new Arg('session', 'sessionSecret', app),
-    new Arg('testID', 'testID', app),
+    new Arg('testID', 'testID', app, true),
     new Arg('dbUser', 'username', dbCreds),
     new Arg('dbPass', 'password', dbCreds)
 ];
@@ -47,7 +48,7 @@ args.forEach((argObj) => {
         
     });
 
-    if (!argObj.fulfilled) {
+    if (!argObj.fulfilled && !argObj.optional) {
        // app.close();
        console.log(`${argObj.argName} must be passed`);
        process.exit();
@@ -69,9 +70,9 @@ const MySQLStore = require('express-mysql-session')(session);
 let mysqlOptions = {
     host: 'localhost',
     port: 3306,
-    user: 'username',
-    password: 'password',
-    database: 'soundtrack-journal'    
+    user: dbCreds.username,
+    password: dbCreds.password,
+    database: 'TrackRecord'    
 };
 
 const databaseConnection = mysql.createConnection(mysqlOptions);
