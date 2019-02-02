@@ -95,7 +95,7 @@ const sessionStore = new MySQLStore({
     databaseConnection);
 app.use(session({
     secret: app.sessionSecret,
-    resave: false,
+    resave: true,
     store: sessionStore,
     saveUninitialized: false,
     cookie: {
@@ -132,10 +132,12 @@ const accountManager = new (require('./account'))(app, request);
 
 let oauth = new (require('./oauth'))(app, request);
 
-
-
+const server = require('./server')(app);
+const UserInfoInterface = require('./userInfoInterface');
 app.get('/users/:userID/last50', (req, res) => {
-    spotifyInterface.getLast50Songs(app.users[req.params.userID])
+
+    UserInfoInterface.getUserByGoogleID(req.params.userID)
+        .then(spotifyInterface.getLast50Songs)
         .then((response) => {
             res.send(response);
         })
@@ -157,6 +159,8 @@ app.close = function(){
 
 test();
 function test() {
+    
+    // TODO update to reflect new db info
     app.get('/refresh', (req, res) => {
         oauth.renewToken(app.users[app.testID].authObj.refreshToken).then((ret) => {
             //console.log(ret);
@@ -169,4 +173,14 @@ function test() {
             res.send(ret);
         });
     });
+
+    const FDB = require('./fakeDatabase');
+    let fakedb = new FDB();
+
+    const User = require('./user');
+    fakedb.addUser(new User({}));
+
+    const UserInfoInterface = new (require('./userInfoInterface'))(fakedb);
+
+
 }

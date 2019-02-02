@@ -1,10 +1,10 @@
 const base64 = require('base-64'); // required for combining client secret and id for spotify auth
-const acc = require('./account');
+const account = new (require('./account'))();
+const UserInfoInterface = require('./userInfoInterface');
 
-
-module.exports = function (app, request, users) {
+module.exports = function (app, request) {
     
-    const account = new acc(app, request);
+ 
 
     let clientID = app.clientID; // must be passed in
     let clientSecret = app.clientSecret; // same
@@ -18,9 +18,12 @@ module.exports = function (app, request, users) {
     // First step in oAuth process. To get access code (for getting auth token)
     // make page for user to click 'allow' on, then wait for spotify to call server with auth code
     app.get('/authorize', (req, res) => {
+        
         let showLogin = false;
+        console.log(req.session.idtoken);
         // check to see users' auth status
         if (req.session.idtoken) {
+            
             account.checkAuth(req.session).then((userID) => {
                 if (userID) {
                     // authenticated, so connect spotify account
@@ -28,6 +31,7 @@ module.exports = function (app, request, users) {
                     // but could save users time
 
                     // for now, just always go through auth process
+                    
                     res.redirect('https://accounts.spotify.com/authorize' +
                         '?response_type=code' +
                         '&client_id=' + clientID +
@@ -46,6 +50,7 @@ module.exports = function (app, request, users) {
         }
         
         if (showLogin) {
+            console.log('redirect back to login');
             res.redirect('/login');
         }
 
@@ -103,13 +108,18 @@ module.exports = function (app, request, users) {
                             <a href="/logout">logout</a>`);
                 //console.log(body);
             }
-            let authObj = {
+            let spotifyAuth = {
                 'accessToken' : body.access_token,
                 'expiresIn' : body.expires_in, // num seconds 
                 'refreshToken' : body.refresh_token // for getting new tokens
             };
 
-            app.users[userID].authObj = authObj;
+            UserInfoInterface.getUserByGoogleID(userID)
+                .then((user) => {
+                    user.SpotifyAuth = spotifyAuth;
+                    
+                }).then(UserInfoInterface.updateUser);
+                // TODO catch
         });
 
     });    

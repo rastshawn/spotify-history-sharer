@@ -1,7 +1,7 @@
 module.exports = function(rp) {
 
-	this.getLast50Songs = function(userObj) {
-		// userObj must contain the access token as userObj.accessToken
+	this.getLast50Songs = function(user) {
+		
 		// https://developer.spotify.com/documentation/web-api/reference/player/get-recently-played/	
 
 
@@ -17,7 +17,7 @@ module.exports = function(rp) {
 						// after : 'unixTimestamp
 					},
 					headers: {
-						'Authorization': 'Bearer ' + userObj.authObj.accessToken
+						'Authorization': 'Bearer ' + user.SpotifyAuth.accessToken
 					},
 					json: true	
 				};
