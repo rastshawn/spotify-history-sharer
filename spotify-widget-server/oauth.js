@@ -2,6 +2,12 @@ const base64 = require('base-64'); // required for combining client secret and i
 const account = new (require('./account'))();
 const UserInfoInterface = require('./userInfoInterface');
 
+function getExpiryDate(expiresIn) {
+    // return the actual date/time the token expires.
+    // expiresIn, from spotify, is number of seconds until it expires.
+    return new Date(Date.now() + expiresIn);
+}
+
 module.exports = function (app, request) {
     
  
@@ -20,7 +26,6 @@ module.exports = function (app, request) {
     app.get('/authorize', (req, res) => {
         
         let showLogin = false;
-        console.log(req.session.idtoken);
         // check to see users' auth status
         if (req.session.idtoken) {
             
@@ -110,15 +115,15 @@ module.exports = function (app, request) {
             }
             let spotifyAuth = {
                 'accessToken' : body.access_token,
-                'expiresIn' : body.expires_in, // num seconds 
+                'expiresAt' : getExpiryDate(body.expires_in), // num seconds 
                 'refreshToken' : body.refresh_token // for getting new tokens
             };
 
             UserInfoInterface.getUserByGoogleID(userID)
                 .then((user) => {
                     user.SpotifyAuth = spotifyAuth;
-                    
-                }).then(UserInfoInterface.updateUser);
+                    return UserInfoInterface.updateUser(user);
+                });
                 // TODO catch
         });
 
@@ -153,7 +158,7 @@ module.exports = function (app, request) {
 
                 let ret = {
                     'accessToken' : body.access_token,
-                    'expiresIn' : body.expires_in, // num seconds 
+                    'expiresAt' : getExpiryDate(body.expires_in), // num seconds 
                     'refreshToken' : body.refresh_token // for getting new tokens
                 };
 

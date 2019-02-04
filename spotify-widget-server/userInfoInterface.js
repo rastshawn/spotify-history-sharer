@@ -9,7 +9,6 @@ class UserInfoInterface {
     }
 
     static addUser(user){
-        console.log("user added");
         return database.addUser(user);  
     }
 

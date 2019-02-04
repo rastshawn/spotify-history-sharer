@@ -68,6 +68,7 @@ if (!app.clientSecret || !app.clientID || !app.sessionSecret) {
 const mysql = require('mysql');
 const MySQLStore = require('express-mysql-session')(session);
 let mysqlOptions = {
+    connectionLimit: 5,
     host: 'localhost',
     port: 3306,
     user: dbCreds.username,
@@ -75,8 +76,11 @@ let mysqlOptions = {
     database: 'TrackRecord'    
 };
 
-const databaseConnection = mysql.createConnection(mysqlOptions);
+//const databaseConnection = mysql.createConnection(mysqlOptions);
+const databaseConnection = mysql.createPool(mysqlOptions);
 //databaseConnection.connect();
+
+const database = new (require('./database'))(databaseConnection);
 
 const sessionStore = new MySQLStore({
         // options, read here:
@@ -174,13 +178,15 @@ function test() {
         });
     });
 
+    
     const FDB = require('./fakeDatabase');
     let fakedb = new FDB();
-
+/*
     const User = require('./user');
     fakedb.addUser(new User({}));
-
-    const UserInfoInterface = new (require('./userInfoInterface'))(fakedb);
+*/
+    const UserInfoInterface = new (require('./userInfoInterface'))(database);
+    //const UserInfoInterface = new (require('./userInfoInterface'))(fakedb);
 
 
 }

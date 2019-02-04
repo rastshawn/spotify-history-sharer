@@ -15,13 +15,20 @@ module.exports = function() {
                 console.log('user is logged in');
                 UserInfoInterface.getUserByGoogleID(userID)
                     .then((user) => {
-                        console.log(user);
-                        if (user.SpotifyAuth){
-                            // also is connected to spotify!
-                            res.redirect(`/users/${userID}/last50`);
+                        if (user) {
+                            console.log(user);
+                            if (user.SpotifyAuth){
+                                // also is connected to spotify!
+                                res.redirect(`/users/${userID}/last50`);
+                            } else {
+                                // redirect to connect to Spotify
+                                res.redirect('/authorize');
+                            }
                         } else {
-                            // redirect to connect to Spotify
-                            res.redirect('/authorize');
+                            // user is not in db - destroy session and log in again
+
+                            req.session.destroy();
+                            res.redirect('/login');
                         }
                     }); // TODO catch block necessary?
 
@@ -56,7 +63,6 @@ module.exports = function() {
                 'id_token' : req.body.idtoken
             }
         }, (err, httpResponse, body) => {
-            console.log(body);
             body = JSON.parse(body);
             if (body.sub) {
                 // token is good

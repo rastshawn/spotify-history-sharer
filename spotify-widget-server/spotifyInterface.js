@@ -29,7 +29,7 @@ module.exports = function(rp) {
 					.catch((err) => {
 						// try reauthorizing and retrying request only one time
 						// TODO
-
+						console.log(err);
 						reject("Couldn't get info - is user authorized?");
 					});
 
