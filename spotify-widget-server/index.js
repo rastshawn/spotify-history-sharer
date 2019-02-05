@@ -125,10 +125,7 @@ app.use(bodyParser.json());
 
 const rp = require('request-promise');
 
-
-
-
-const spotifyInterface = new (require('./spotifyInterface'))(rp);
+const spotifyInterface = new (require('./spotifyInterface'))();
 
 const accountManager = new (require('./account'))(app, request);
 
@@ -138,6 +135,7 @@ let oauth = new (require('./oauth'))(app, request);
 
 const server = require('./server')(app);
 const UserInfoInterface = require('./userInfoInterface');
+/*
 app.get('/users/:userID/last50', (req, res) => {
 
     UserInfoInterface.getUserByGoogleID(req.params.userID)
@@ -149,6 +147,7 @@ app.get('/users/:userID/last50', (req, res) => {
             res.send(err);
         });
 });
+*/
 
 
 

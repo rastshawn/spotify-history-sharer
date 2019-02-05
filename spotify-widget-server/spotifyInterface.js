@@ -1,4 +1,5 @@
-module.exports = function(rp) {
+const rp = require('request-promise');
+module.exports = function() {
 
 	this.getLast50Songs = function(user) {
 		
