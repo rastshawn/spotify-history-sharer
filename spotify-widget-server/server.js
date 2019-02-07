@@ -21,13 +21,11 @@ module.exports = function(app) {
             .then((response) => {
                 //console.log(response);
                 let string = makeEmbed.getHTML(response);
-
-                console.log(string);
                 res.send(string);
             })
             .catch((err) => {
                 console.log(err);
-                //res.send(err);
+                res.send("Something went wrong.");
             });
     });
     

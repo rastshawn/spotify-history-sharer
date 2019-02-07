@@ -134,9 +134,9 @@ module.exports = function (app, request) {
         
 
     // get a new auth token when the old one expires
-    this.renewToken = function(refreshToken) {
+    this.renewToken = function(user) {
         // call /api/token with refresh token
-
+        let refreshToken = user.SpotifyAuth.refreshToken;
         let call = {
             url: 'https://accounts.spotify.com/api/token',
             headers: {
@@ -147,26 +147,34 @@ module.exports = function (app, request) {
                 'refresh_token' : refreshToken
             },
             json: true
-        }
+        };
         
-        return new Promise((resolve, reject) => {
+       
 
-            request.post(call, (err, httpResponse, body) => {
-                if (err) {
-                    reject(err);
-                }
+        request.post(call, (err, httpResponse, body) => {
+            if (err) {
+                return err;
+            }
 
-                let ret = {
-                    'accessToken' : body.access_token,
-                    'expiresAt' : getExpiryDate(body.expires_in), // num seconds 
-                    'refreshToken' : body.refresh_token // for getting new tokens
-                };
+            
+            if (body.refresh_token) {
+                // there's a new refresh token in town
+                // refresh_token will be undefined unless the backend sends a new one
+                refreshToken = body.refresh_token;
+            }
+            let ret = {
+                'accessToken' : body.access_token,
+                'expiresAt' : getExpiryDate(body.expires_in), // num seconds 
+                'refreshToken' : refreshToken // for getting new tokens
+            };
 
-                // refreshToken will be undefined unless the backend sends a new one
-                resolve(ret);
-            });
-
+            user.SpotifyAuth = ret;
+            
+            return UserInfoInterface.updateUser(user);
+            
         });
+
+        
         
 
     };

@@ -2,7 +2,7 @@
 const User = require('./user');
 let pool = {};
 let buildUserObj = function(dbResults) {
-
+    console.log(dbResults);
     // if passed null, return null
     if (!dbResults){
         return dbResults;
@@ -12,9 +12,11 @@ let buildUserObj = function(dbResults) {
         userID : dbResults.GoogleUserID,
     }
 
+    let expDate = '';
+    if (dbResults.SpotifyAuthExpiration) expDate = new Date(dbResults.SpotifyAuthExpiration.getTime());
     let spotifyAuth = {
         'accessToken' : dbResults.SpotifyAccessToken,
-        'expiresAt' : dbResults.SpotityAuthExpiration, // datetime
+        'expiresAt' : expDate, // datetime
         'refreshToken' : dbResults.SpotifyRefreshToken // for getting new tokens
     };
 
@@ -53,6 +55,7 @@ module.exports = class Database {
     updateUser(user) {
         return new Promise((resolve, reject) => {
             // TODO check if user does not exist
+
             let q = `UPDATE Users SET
                 SpotifyAccessToken = '${user.SpotifyAuth.accessToken}',
                 SpotifyAuthExpiration = ${pool.escape(user.SpotifyAuth.expiresAt)},

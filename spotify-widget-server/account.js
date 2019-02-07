@@ -16,7 +16,7 @@ module.exports = function() {
                 UserInfoInterface.getUserByGoogleID(userID)
                     .then((user) => {
                         if (user) {
-                            console.log(user);
+                            
                             if (user.SpotifyAuth){
                                 // also is connected to spotify!
                                 res.redirect(`/users/${userID}/last50`);
@@ -69,8 +69,14 @@ module.exports = function() {
                 
                 // req.session.userID = body.sub; this is probably insecure. Use ID Token instead
                 req.session.idtoken = req.body.idtoken; // used for future auth requests
-                UserInfoInterface.addUser(new User({"userID" : body.sub}));
 
+                // if user does not already exist, add user to db
+                UserInfoInterface.getUserByGoogleAuthToken(req.session.idtoken)
+                    .then((user) => {
+                        if (!user) {
+                            UserInfoInterface.addUser(new User({"userID" : body.sub}));
+                        }
+                    });
                 res.send(body.sub);
 
             } else {
@@ -91,7 +97,7 @@ module.exports = function() {
     };
 
 
-    this.checkAuth = function(session) {
+    this.checkAuth = (session) => {
         //console.log(session.idtoken);
         return new Promise((resolve, reject) => {
             if (!session.idtoken) {
@@ -108,7 +114,7 @@ module.exports = function() {
         });
     };
 
-    this.getIDFromAuthToken = function(authToken) {
+    this.getIDFromAuthToken = (authToken) => {
         //console.log(authToken);
         return new Promise((resolve, reject) => {
             request.get( {

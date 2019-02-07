@@ -1,11 +1,11 @@
-const account = require('./account');
-const User = require('./user');
+let account = '';
 let database = {};
 
 class UserInfoInterface {
 
     constructor(db) {
         database = db;
+        account = new (require('./account'))();
     }
 
     static addUser(user){

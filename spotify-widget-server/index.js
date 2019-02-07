@@ -73,7 +73,8 @@ let mysqlOptions = {
     port: 3306,
     user: dbCreds.username,
     password: dbCreds.password,
-    database: 'TrackRecord'    
+    database: 'TrackRecord', 
+   // dateStrings: true
 };
 
 //const databaseConnection = mysql.createConnection(mysqlOptions);
@@ -81,7 +82,7 @@ const databaseConnection = mysql.createPool(mysqlOptions);
 //databaseConnection.connect();
 
 const database = new (require('./database'))(databaseConnection);
-
+new (require('./userInfoInterface'))(database);
 const sessionStore = new MySQLStore({
         // options, read here:
         // https://www.npmjs.com/package/express-mysql-session
@@ -127,7 +128,7 @@ const rp = require('request-promise');
 
 const spotifyInterface = new (require('./spotifyInterface'))();
 
-const accountManager = new (require('./account'))(app, request);
+//const accountManager = new (require('./account'))(app, request);
 
 
 
@@ -160,32 +161,26 @@ app.close = function(){
     process.exit();
 };
 
+const FDB = require('./fakeDatabase');
+let fakedb = new FDB();
+/*
+const User = require('./user');
+fakedb.addUser(new User({}));
+*/
+
+//const UserInfoInterface = new (require('./userInfoInterface'))(fakedb);
 test();
 function test() {
     
-    // TODO update to reflect new db info
     app.get('/refresh', (req, res) => {
-        oauth.renewToken(app.users[app.testID].authObj.refreshToken).then((ret) => {
-            //console.log(ret);
-            res.send(ret);
-
-            app.users[app.testID].authObj.accessToken = ret.accessToken;
-
-        }).catch((err) => {
-            console.log(err);
-            res.send(ret);
-        });
+        let user = {};
+        UserInfoInterface.getUserByGoogleAuthToken(req.session.idtoken)
+            .then(oauth.renewToken)
+            .then((user) => {
+                res.send('Token refreshed');
+            })
+            .catch((err) => {
+                console.log("err in renewing spotify token");
+            });
     });
-
-    
-    const FDB = require('./fakeDatabase');
-    let fakedb = new FDB();
-/*
-    const User = require('./user');
-    fakedb.addUser(new User({}));
-*/
-    const UserInfoInterface = new (require('./userInfoInterface'))(database);
-    //const UserInfoInterface = new (require('./userInfoInterface'))(fakedb);
-
-
 }
