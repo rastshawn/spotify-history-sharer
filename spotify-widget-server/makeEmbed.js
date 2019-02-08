@@ -1,6 +1,6 @@
 module.exports = {
     getHTML : function(last50){
-    
+    let meta = `<meta name="viewport" content="width=device-width, initial-scale=1">`;
 let style = `
 <style>
 .mainWindow {
@@ -58,7 +58,7 @@ for(let i = 0; i<last50.items.length; i++) {
 
 mainBox += '</div>';
 
-let HTML = style + mainBox;
+let HTML = meta + style + mainBox;
 
 
 return HTML;
