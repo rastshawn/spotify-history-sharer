@@ -29,6 +29,21 @@ module.exports = function(app) {
                 res.send("Something went wrong.");
             });
     });
+
+    app.get('/users/:userID/last50RAW', (req, res) => {
+
+        UserInfoInterface.getUserByGoogleID(req.params.userID)
+            .then(spotifyInterface.getLast50Songs)
+            .then((response) => {
+                //console.log(response);
+                //let string = makeEmbed.getHTML(response);
+                res.send(response);
+            })
+            .catch((err) => {
+                console.log(err);
+                res.send("Something went wrong.");
+            });
+    });
     
     app.get('/authorize', (req, res) => {
         OAuth.authorize(req, res);

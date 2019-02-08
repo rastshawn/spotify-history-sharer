@@ -32,17 +32,16 @@ for(let i = 0; i<last50.items.length; i++) {
     let imageURL = '';
     for (let j = 0; j<track.album.images.length; j++){
         
-        if (track.album.images[j].height == 64){
-           
+        if (track.album.images[j].height < 100){
+           // going for 64, but some are 63
             imageURL = track.album.images[j].url;
         }
     }
     
     let name = track.name;
-    let trackURL = track.href;
+    let trackURL = track.external_urls.spotify;
     
     let artistsString = track.artists.map((artist) => {
-        
         return artist.name;
     }).join(', ');
 
