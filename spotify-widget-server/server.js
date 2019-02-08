@@ -2,6 +2,7 @@ const account = new (require('./account'))();
 const makeEmbed = require('./makeEmbed');
 const UserInfoInterface = require('./userInfoInterface');
 const spotifyInterface = new (require('./spotifyInterface'))();
+const OAuth = require('./oauth');
 module.exports = function(app) {
     app.get('/login', (req, res) => {
         account.loginGET(req, res, app);
@@ -28,5 +29,14 @@ module.exports = function(app) {
                 res.send("Something went wrong.");
             });
     });
+    
+    app.get('/authorize', (req, res) => {
+        OAuth.authorize(req, res);
+    });
+
+    app.get('/saveCode', (req, res) => {
+        OAuth.saveCode(req, res);
+    });
+
     
 }

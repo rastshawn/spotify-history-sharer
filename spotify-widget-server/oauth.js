@@ -1,30 +1,33 @@
 const base64 = require('base-64'); // required for combining client secret and id for spotify auth
 const account = new (require('./account'))();
 const UserInfoInterface = require('./userInfoInterface');
+const request = require('request');
 
 function getExpiryDate(expiresIn) {
     // return the actual date/time the token expires.
     // expiresIn, from spotify, is number of seconds until it expires.
-    return new Date(Date.now() + expiresIn);
+    return new Date(Date.now() + expiresIn*1000);
 }
 
-module.exports = function (app, request) {
+// class variables
+let app, redirectURI;
+let scope = 'user-read-recently-played';
+
+
+class OAuth {
     
  
+    constructor(expressApp){
+       
+        app = expressApp;
 
-    let clientID = app.clientID; // must be passed in
-    let clientSecret = app.clientSecret; // same
-    let scope = 'user-read-recently-played';
-    let host = app.host;
-
-    let redirectURI = host + '/saveCode';
-
+        redirectURI = app.host + '/saveCode';
+    };
 
     // this is where user logs in to
     // First step in oAuth process. To get access code (for getting auth token)
     // make page for user to click 'allow' on, then wait for spotify to call server with auth code
-    app.get('/authorize', (req, res) => {
-        
+    static authorize(req, res) {    
         let showLogin = false;
         // check to see users' auth status
         if (req.session.idtoken) {
@@ -39,7 +42,7 @@ module.exports = function (app, request) {
                     
                     res.redirect('https://accounts.spotify.com/authorize' +
                         '?response_type=code' +
-                        '&client_id=' + clientID +
+                        '&client_id=' + app.clientID +
                         '&state=' + userID +
                         '&scope=' + scope +
                         '&show_dialog=true' +
@@ -59,12 +62,13 @@ module.exports = function (app, request) {
             res.redirect('/login');
         }
 
-    });
+    };
 
 
 
         // this is the callback from spotify
-    app.get('/saveCode', (req, res) => {
+    
+    static saveCode(req, res) {
         // access code is in query string
         // ?code=fesjklfjseklveiojes&state=userID
         
@@ -127,52 +131,54 @@ module.exports = function (app, request) {
                 // TODO catch
         });
 
-    });    
+    };    
 
 
         
         
 
     // get a new auth token when the old one expires
-    this.renewToken = function(user) {
+    static renewToken(user) {
         // call /api/token with refresh token
-        let refreshToken = user.SpotifyAuth.refreshToken;
-        let call = {
-            url: 'https://accounts.spotify.com/api/token',
-            headers: {
-                'Authorization' : 'Basic ' + (new Buffer(app.clientID + ':' + app.clientSecret).toString('base64'))
-            },
-            form: {
-                'grant_type' : 'refresh_token',
-                'refresh_token' : refreshToken
-            },
-            json: true
-        };
-        
-       
 
-        request.post(call, (err, httpResponse, body) => {
-            if (err) {
-                return err;
-            }
-
+        return new Promise((resolve, reject) => {
             
-            if (body.refresh_token) {
-                // there's a new refresh token in town
-                // refresh_token will be undefined unless the backend sends a new one
-                refreshToken = body.refresh_token;
-            }
-            let ret = {
-                'accessToken' : body.access_token,
-                'expiresAt' : getExpiryDate(body.expires_in), // num seconds 
-                'refreshToken' : refreshToken // for getting new tokens
+            let refreshToken = user.SpotifyAuth.refreshToken;
+            let call = {
+                url: 'https://accounts.spotify.com/api/token',
+                headers: {
+                    'Authorization' : 'Basic ' + (new Buffer(app.clientID + ':' + app.clientSecret).toString('base64'))
+                },
+                form: {
+                    'grant_type' : 'refresh_token',
+                    'refresh_token' : refreshToken
+                },
+                json: true
             };
+            
+        
 
-            user.SpotifyAuth = ret;
-            
-            return UserInfoInterface.updateUser(user);
-            
-        });
+            request.post(call, (err, httpResponse, body) => {
+                if (err) {
+                    reject(err);
+                }
+
+                
+                if (body.refresh_token) {
+                    // there's a new refresh token in town
+                    // refresh_token will be undefined unless the backend sends a new one
+                    refreshToken = body.refresh_token;
+                }
+                let ret = {
+                    'accessToken' : body.access_token,
+                    'expiresAt' : getExpiryDate(body.expires_in), // num seconds 
+                    'refreshToken' : refreshToken // for getting new tokens
+                };
+
+                user.SpotifyAuth = ret;
+                resolve(user);
+            });
+        }).then(UserInfoInterface.updateUser);
 
         
         
@@ -180,3 +186,5 @@ module.exports = function (app, request) {
     };
 
 };
+
+module.exports = OAuth;

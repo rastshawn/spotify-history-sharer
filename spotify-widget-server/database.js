@@ -2,7 +2,6 @@
 const User = require('./user');
 let pool = {};
 let buildUserObj = function(dbResults) {
-    console.log(dbResults);
     // if passed null, return null
     if (!dbResults){
         return dbResults;
@@ -45,7 +44,7 @@ module.exports = class Database {
                         if (error) {
                             reject(error);
                         } else {
-                            resolve(user);
+                            resolve(user.GoogleAccount.userID);
                         }
                     }
             );
@@ -62,12 +61,12 @@ module.exports = class Database {
                 SpotifyRefreshToken = '${user.SpotifyAuth.refreshToken}'
                 WHERE GoogleUserID = '${user.GoogleAccount.userID}';`;
 
-            console.log(q);
+            
 
             pool.query(q, (error, results, fields) => {
                 if (error) reject(error);
                 else {
-                    resolve(user);
+                    resolve(user.GoogleAccount.userID);
                 }
             });
         }).then(this.getUserByGoogleID);
@@ -81,9 +80,9 @@ module.exports = class Database {
             pool.query(q, (error, results, fields) => {
                 if (error) reject(error);
                 else {
+                    
                     let ret = buildUserObj(results[0]);
-                    console.log("result from DB: ");
-                    console.log(ret);
+                    
                     resolve(ret);
                 }
             });

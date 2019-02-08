@@ -132,7 +132,8 @@ const spotifyInterface = new (require('./spotifyInterface'))();
 
 
 
-let oauth = new (require('./oauth'))(app, request);
+const OAuth = require('./oauth');
+new OAuth(app);
 
 const server = require('./server')(app);
 const UserInfoInterface = require('./userInfoInterface');
@@ -171,11 +172,11 @@ fakedb.addUser(new User({}));
 //const UserInfoInterface = new (require('./userInfoInterface'))(fakedb);
 test();
 function test() {
-    
+    /*
     app.get('/refresh', (req, res) => {
         let user = {};
         UserInfoInterface.getUserByGoogleAuthToken(req.session.idtoken)
-            .then(oauth.renewToken)
+            .then(OAuth.renewToken)
             .then((user) => {
                 res.send('Token refreshed');
             })
@@ -183,4 +184,5 @@ function test() {
                 console.log("err in renewing spotify token");
             });
     });
+    */
 }

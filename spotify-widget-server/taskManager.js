@@ -21,3 +21,11 @@ module.exports = function() {
             // });
     };
 };
+
+/*
+
+getQueue();
+// tasks are either refresh or get50
+
+// should I auto-refresh if token is expired? 
+addTask(promise, timeout);
