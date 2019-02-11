@@ -1,0 +1,16 @@
+<div class="bar">
+    <div id="logo">
+        <span id="track">Track</span>
+        <span id="record">Record</span>
+    </div>
+
+    <div id="barButtons">
+        {{#each buttons}}
+            <div class="btn btn-{{color}}" 
+                {{#if onclick}}onclick="{{onclick}}"{{/if}}
+                id="{{id}}">
+                {{text}}
+            </div>
+        {{/each}}
+    </div>
+</div>

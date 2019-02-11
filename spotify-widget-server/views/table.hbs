@@ -1,0 +1,22 @@
+{{style}}
+
+<table>
+    <thead>
+        <tr>
+        {{#each fields}}
+            <th>{{this}}</th>
+        {{/each}}
+        </tr>
+    </thead>
+    <tbody>
+
+    {{#each data as |value key|}}
+        <tr>
+        {{#each value as |val2 key2|}}
+            <td>{{val2}}</td>
+        {{/each}}
+        </tr>
+    {{/each}}
+    
+    </tbody>
+</table>
