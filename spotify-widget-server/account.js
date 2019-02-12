@@ -1,8 +1,9 @@
-const path = require('path');
+
 const User = require('./user');
 const UserInfoInterface = require('./userInfoInterface');
 const request = require('request');
-const directory = path.resolve(__dirname, '.', 'public');
+
+
 module.exports = function() {
     this.loginGET = (req, res) => {
         // check if user is already logged in
@@ -41,11 +42,7 @@ module.exports = function() {
                     return;
                 }
                 console.log("not logged in");
-                res.sendFile('login.html',{root: directory}, (err) => {
-                    if (err) {
-                        res.send(err);
-                    }
-                })
+                res.redirect('/public/login.html');
             }
         });
 
@@ -89,11 +86,8 @@ module.exports = function() {
 
     this.logoutGET = (req, res) => {
         req.session.destroy();
-        res.sendFile('logout.html',{root: directory}, (err) => {
-            if (err) {
-                res.send(err);
-            }
-        })
+        res.redirect('/public/logout.html');
+
     };
 
 

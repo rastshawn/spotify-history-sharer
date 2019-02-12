@@ -1,0 +1,25 @@
+
+<div class="bar">
+    
+    <div id="logo">
+        <div class="flex-container">
+            <div id="track">Track</div><div id="record">Record</div>
+        </div>
+    </div>
+    
+    <div id="barButtons">
+        <div class="flex-container">
+            {{#each buttons}}
+                <div class="btn btn-{{color}}" 
+                    {{#if onclick}}onclick="{{onclick}}"{{/if}}
+                    id="{{id}}">
+                    <div class="flex-container">
+                        <div>
+                            {{text}}
+                        </div>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+</div>

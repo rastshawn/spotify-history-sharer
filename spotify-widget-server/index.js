@@ -1,8 +1,22 @@
 
 const express = require('express');
 const session = require('express-session');
+const exphbs = require('express-handlebars');
 const app = express();
 const port = 6001;
+
+const path = require('path');
+
+let views = path.join(__dirname, 'views');
+app.use('/public', express.static(path.join(__dirname, 'public')));
+app.engine('handlebars', exphbs({
+    defaultLayout: 'main',
+    layoutsDir : path.join(views, 'layouts'),
+    partialsDir : path.join(views, 'partials')
+}));
+app.set('view engine', 'handlebars');
+app.set('views', views);
+
 
 app.host = 'http://preznix.shawnrast.com:' + port;
 app.clientID = '';
