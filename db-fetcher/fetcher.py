@@ -2,8 +2,13 @@ import threading
 import mysql.connector
 import time
 import sys
+import datetime
+## Global helper functions
+def getSecondsSinceEpoch(dateTime):
+    epoch = datetime.datetime.utcfromtimestamp(0)
+    return (dateTime - epoch).total_seconds()
 
-# DB class from https://stackoverflow.com/a/982873
+# DB class modified from https://stackoverflow.com/a/982873
 class DB:
     conn = None
 
@@ -41,8 +46,6 @@ class DB:
         return cursor
 
 
-db = DB()
-db.connect()
 
 class Job:
     target = {}
@@ -57,12 +60,6 @@ class Job:
     def execute(self):
         thread = threading.Thread(target=self.target, args=self.args)
         thread.start()
-# test connect to db
-# sql = "SELECT * FROM Users"
-# cursor = db.query(sql)
-# for row in cursor:
-# print(row)
-
 
 class TimedJob:
     def __init__(self, job, time):
@@ -78,26 +75,6 @@ class TimedJob:
     def execute(self):
         self.job.execute()
 
-
-
-def loop():
-    currentTime = time.time()
-
-    for job in queue:
-        if job.time < currentTime:
-            job.execute()
-            queue.arr = [job for job in queue.arr if not (job.time < currentTime)]
-            continue
-            # remove job from queue
-            # run job in new thread
-
-        else:
-            # queue is sorted, so we can skip forward
-            break
-    
-
-maxConnections = 1
-dbSemaphore = threading.BoundedSemaphore(maxConnections)
 
 
 class SelfSort:
@@ -133,23 +110,31 @@ class SelfSort:
 
         self.arr = newArr
 
+def pollLast50(userID):
+    # make an http call to /user/:userID/last50RAW
+    # convert json 
 
+    # if error in getting http request, call refresh... maybe from web server
+    print("%s" % (userID))
 
-queue = SelfSort()  # make a self-sorting queue by time
-
-
-def pollLast50(userID, num):
-    print("%s : %s" % (userID, num))
-
-def checkLocalDB(num):
+def checkLocalDB():
     dbSemaphore.acquire()
-    users = db.query("Select GoogleUserID from Users")
+
+    users = db.query("Select GoogleUserID, NextHistoryUpdate from Users")
+    #users = db.query("Select GoogleUserID from Users")
 
     for user in users:
-        job = Job(pollLast50, [user[0], num])
-        timedJob = TimedJob(job, time.time() + num)
+        print(time.time())
+        print(getSecondsSinceEpoch(user[1]))
+        job = Job(pollLast50, [user[0]])
+        timedJob = TimedJob(job, time.time())
         queue.enqueue(timedJob)
     dbSemaphore.release()
+
+    # enqueue this same function again
+    thisFunction = Job(checkLocalDB, [])
+    timedThis = TimedJob(thisFunction, time.time() + 5)
+    queue.enqueue(timedThis)
     
     # readFromDB()
     # .then(
@@ -157,14 +142,36 @@ def checkLocalDB(num):
     # add all future calls to the queue
     # queue.add(checkLocalDB)
 
+def loop():
+    currentTime = time.time()
 
-for i in range(0, 15):
-    #thread = threading.Thread(target=checkLocalDB, args=([i]))
-    #thread = threading.Thread(target=checkLocalDB)
-    #thread.start()
-    checkLocalDB(i)
-#newthread = threading.Thread(target=funcName, args=(2, 3, 4))
+    for job in queue:
+        if job.time < currentTime:
+            job.execute()
 
+            # remove job from queue
+            queue.arr = [job for job in queue.arr if not (job.time < currentTime)]
+        else:
+            # queue is sorted, so we can skip forward
+            break
+    
+
+
+db = DB()
+db.connect()
+
+maxConnections = 1
+dbSemaphore = threading.BoundedSemaphore(maxConnections)
+
+queue = SelfSort()  # make a self-sorting queue by time
+
+
+# for i in range(0, 15):
+#     checkLocalDB(i)
+
+
+# this gets the 25-min db check interval going
+checkLocalDB()
 
 
 while True:

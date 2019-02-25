@@ -5,5 +5,6 @@ CREATE TABLE Users (
     GoogleUserID VARCHAR(50) NOT NULL UNIQUE KEY,
     SpotifyAccessToken VARCHAR(512),
     SpotifyAuthExpiration DATETIME,
-    SpotifyRefreshToken VARCHAR(512)
+    SpotifyRefreshToken VARCHAR(512),
+    NextHistoryUpdate DATETIME
 );
