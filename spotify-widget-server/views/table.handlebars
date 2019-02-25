@@ -3,9 +3,24 @@
 
 <!-- add something about no wrap on text fields -->
 <style>
+body {
+    background-color: #333333;
+}
 .mainWindow {
-    overflow: auto;
-    max-height: 98vh;
+    overflow-y: scroll; /* has to be scroll, not auto */
+    -webkit-overflow-scrolling: touch;
+    max-height:95vh;
+    background-color: #333333;
+    margin: 0;
+    padding: 0;
+}
+
+.mainWindow table{
+    color: #FFFFFF;
+}
+
+.mainWindow table a {
+    color: #DDDDDD;
 }
 
 .album {
@@ -14,7 +29,9 @@
     margin: 4;
 }
 </style>
-
+    <link href="https://fonts.googleapis.com/css?family=Nunito:400,600" rel="stylesheet">
+    <link rel="stylesheet" href="/public/css/style.css" />
+<body>
 <div class="mainWindow">
     <table>
         <thead>
@@ -29,7 +46,7 @@
         {{#each data as |value key|}}
             <tr>
             {{#each value as |val2 key2|}}
-                <td>{{val2}}</td>
+                <td>{{{val2}}}</td>
             {{/each}}
             </tr>
         {{/each}}
@@ -37,3 +54,4 @@
         </tbody>
     </table>
 </div>
+</body>

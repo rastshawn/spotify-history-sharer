@@ -22,7 +22,10 @@ module.exports = function(app) {
         UserInfoInterface.getUserByGoogleID(req.params.userID)
             .then(spotifyInterface.getLast50Songs)
             .then((response) => {
-                res.render('table', templateObjectBuilder.last50(response));
+
+                let hbs = Object.assign(templateObjectBuilder.last50(response), {layout: false});
+
+                res.render('table', hbs);
             })
             .catch((err) => {
                 console.log(err);
@@ -66,24 +69,37 @@ module.exports = function(app) {
     });
     
     app.get('/TimeMachine', (req, res) => {
-        let hbs = {
-            buttons: [
-                {
-                    id: "accountBtn",
-                    text: "my account",
-                    color: "blue",
-                    onclick: "window.location.href = '/account'"
-                },
-                {
-                    id: "logoutBtn",
-                    text: "log out",
-                    color: "red",
-                    onclick: "window.location.href = '/logout'"
-                }
-            ]
-        };
 
-        res.render('timemachine', hbs);
+        account.checkAuth(req.session)
+            .then((userID) => {
+                if (userID) {
+                    let hbs = {
+                        buttons: [
+                            {
+                                id: "accountBtn",
+                                text: "my account",
+                                color: "blue",
+                                onclick: "window.location.href = '/account'"
+                            },
+                            {
+                                id: "logoutBtn",
+                                text: "log out",
+                                color: "red",
+                                onclick: "window.location.href = '/logout'"
+                            }
+                        ],
+                        userID : userID
+                    };
+
+                    res.render('timemachine', hbs);
+                } else {
+                    // not logged in
+                    req.session.destroy();
+                    res.redirect('/login');
+                }
+            });
+
+        
 
     })
 

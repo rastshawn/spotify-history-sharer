@@ -20,7 +20,7 @@ module.exports = function() {
                             
                             if (user.SpotifyAuth){
                                 // also is connected to spotify!
-                                res.redirect(`/users/${userID}/last50`);
+                                res.redirect(`/timemachine`);
                             } else {
                                 // redirect to connect to Spotify
                                 res.redirect('/authorize');

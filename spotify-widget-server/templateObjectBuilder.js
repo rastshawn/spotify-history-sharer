@@ -26,9 +26,10 @@ module.exports = {
             let albumArt = `<img class='album' src='${imageURL}'></img>`;
             
             data.push({
+                
+                albumArt : albumArt,
                 name : name,
-                artists : artists,
-                albumArt : albumArt
+                artists : artists
             });
         }
 
