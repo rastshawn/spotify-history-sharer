@@ -8,6 +8,7 @@ import datetime
 # https://docs.python.org/3/library/http.client.html#examples
 # example making http calls
 import http.client, urllib.parse
+import json
 def makeHTTPCall():
     conn = http.client.HTTPConnection("google.com")
     conn.request("POST", "")
@@ -17,7 +18,20 @@ def makeHTTPCall():
     conn.close()
     return data
 
-print(makeHTTPCall())
+#print(makeHTTPCall())
+
+def getLast50Node(userID):
+
+    #TODO do this without using the server - link directly to spotify
+    url = 'trackrecord.shawnrast.com'
+    conn = http.client.HTTPConnection(url)
+    conn.request("GET", "/users/" + userID + "/last50RAW")
+    response = conn.getresponse()
+    last50JSON = response.read().decode('utf-8')
+    conn.close()
+    last50 = json.loads(last50JSON)
+    return last50
+
 
 ## Global helper functions
 def getSecondsSinceEpoch(dateTime):
@@ -126,12 +140,37 @@ class SelfSort:
 
         self.arr = newArr
 
-def pollLast50(userID):
+def readFromListensTable(userID):
+    query = "SELECT PlayedAt FROM Listens WHERE "
+    query += "GoogleUserID='" + userID + "'"
+    # query += "AND PlayedAt AFTER X"
+    # TODO change query so that it only reads from a specified date
+
+    dbSemaphore.acquire()
+
+    listens = db.query(query)
+    #users = db.query("Select GoogleUserID from Users")
+    dbSemaphore.release()
+
+    return listens
+
+
+
+def addLast50ToDatabase(userID):
+    # if error in getting http request, call refresh... maybe from web server
     # make an http call to /user/:userID/last50RAW
     # convert json 
+    last50 = getLast50Node(userID)
 
-    # if error in getting http request, call refresh... maybe from web server
-    print("%s" % (userID))
+    items = last50['items']
+
+    for item in items:
+        print(item['track']['name'], item['track']['id'], item['played_at'])
+    # check to see what most recent date is in listens for that user
+
+    # add all the new ones to the database
+
+    print(readFromListensTable(userID))
 
 def checkLocalDB():
     dbSemaphore.acquire()
@@ -139,17 +178,36 @@ def checkLocalDB():
     users = db.query("Select GoogleUserID, NextHistoryUpdate from Users")
     #users = db.query("Select GoogleUserID from Users")
 
+    overdue = []
+    now = time.time()
     for user in users:
-        print(time.time())
-        print(getSecondsSinceEpoch(user[1]))
-        job = Job(pollLast50, [user[0]])
-        timedJob = TimedJob(job, time.time())
-        queue.enqueue(timedJob)
+
+        userTime = getSecondsSinceEpoch(user[1])
+        userID = user[0]
+
+        if userTime < now:
+            job = Job(addLast50ToDatabase, [user[0]])
+            overdue.append(job)
+        else:
+            job = Job(addLast50ToDatabase, [user[0]])
+            timedJob = TimedJob(job, userTime)
+            queue.enqueue(timedJob)
+
+        # enqueue overdue calls in batches of 5
+        numExtraSeconds = 1
+        for i in range(0, len(overdue)):
+            job = overdue[i]
+            timedJob = TimedJob(job, now + numExtraSeconds)
+            queue.enqueue(timedJob)
+            if i%5 == 0:
+                numExtraSeconds += 1
+
+        
     dbSemaphore.release()
 
     # enqueue this same function again
     thisFunction = Job(checkLocalDB, [])
-    timedThis = TimedJob(thisFunction, time.time() + 5)
+    timedThis = TimedJob(thisFunction, time.time() + 5) ##TODO change from 5 seconds to 25 mins
     queue.enqueue(timedThis)
     
     # readFromDB()
