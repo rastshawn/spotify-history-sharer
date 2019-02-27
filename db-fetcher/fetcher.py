@@ -3,6 +3,22 @@ import mysql.connector
 import time
 import sys
 import datetime
+
+
+# https://docs.python.org/3/library/http.client.html#examples
+# example making http calls
+import http.client, urllib.parse
+def makeHTTPCall():
+    conn = http.client.HTTPConnection("google.com")
+    conn.request("POST", "")
+    #conn.request("GET", "")
+    response = conn.getresponse()
+    data = response.read().decode('utf-8')
+    conn.close()
+    return data
+
+print(makeHTTPCall())
+
 ## Global helper functions
 def getSecondsSinceEpoch(dateTime):
     epoch = datetime.datetime.utcfromtimestamp(0)
