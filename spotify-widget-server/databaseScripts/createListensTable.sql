@@ -6,6 +6,6 @@ CREATE TABLE Listens (
     FOREIGN KEY (GoogleUserID) 
         REFERENCES Users(GoogleUserID)
         ON UPDATE CASCADE,
-    SpotifyTrackID INT NOT NULL, 
+    SpotifyTrackID VARCHAR(50) NOT NULL, 
     PlayedAt DATETIME
 )

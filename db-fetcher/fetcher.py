@@ -65,13 +65,13 @@ class DB:
 
     def query(self, sql):
         try:
-            cursor = self.conn.cursor()
+            cursor = self.conn.cursor(buffered=True)
             cursor.execute(sql)
         except Exception as err:  # (AttributeError, MySQLdb.OperationalError):
             print("Query err")
             print(err)
             self.connect()
-            cursor = self.conn.cursor()
+            cursor = self.conn.cursor(buffered=True)
             cursor.execute(sql)
         return cursor
 
@@ -90,6 +90,11 @@ class Job:
     def execute(self):
         thread = threading.Thread(target=self.target, args=self.args)
         thread.start()
+
+        # if len(self.args) > 0:
+        #     self.target(self.args[0])
+        # else:
+        #     self.target()
 
 class TimedJob:
     def __init__(self, job, time):
@@ -140,9 +145,10 @@ class SelfSort:
 
         self.arr = newArr
 
-def readFromListensTable(userID):
+def getMostRecentSavedListen(userID):
     query = "SELECT PlayedAt FROM Listens WHERE "
     query += "GoogleUserID='" + userID + "'"
+    query += "ORDER BY PlayedAt DESC LIMIT 1"
     # query += "AND PlayedAt AFTER X"
     # TODO change query so that it only reads from a specified date
 
@@ -160,17 +166,53 @@ def addLast50ToDatabase(userID):
     # if error in getting http request, call refresh... maybe from web server
     # make an http call to /user/:userID/last50RAW
     # convert json 
+
+
+    # Database ignores duplicates using "insert ignore"
+
+    mostRecentListenTimestamp = getMostRecentSavedListen(userID)
+    if mostRecentListenTimestamp.rowcount < 1:
+        print("EMPTY SET")
+        mostRecentListenTimestamp = 0
+    else:
+        mostRecentListenTimestamp = mostRecentListenTimestamp.fetchone()[0]
+        mostRecentListenTimestamp = getSecondsSinceEpoch(mostRecentListenTimestamp)
+
     last50 = getLast50Node(userID)
 
+    
+
     items = last50['items']
-
+    itemsToAdd = []
     for item in items:
-        print(item['track']['name'], item['track']['id'], item['played_at'])
-    # check to see what most recent date is in listens for that user
 
-    # add all the new ones to the database
+        try:
+            timestamp = getSecondsSinceEpoch(datetime.datetime.strptime(item['played_at'], '%Y-%m-%dT%H:%M:%S.%fZ'))
+        except Exception as e:
+            datetime.datetime.strptime(item['played_at'], '%Y-%m-%dT%H:%M:%SZ')
 
-    print(readFromListensTable(userID))
+        
+        if timestamp <= mostRecentListenTimestamp+1:
+            # This listen is already recorded in the database
+            continue
+        else:
+            #print(item['track']['name'], item['track']['id'], item['played_at'])
+            itemsToAdd.append(item)
+
+
+    # add the new stuff to the db
+    if len(itemsToAdd) > 0:
+        dbSemaphore.acquire()
+        insertIgnoreQuery = "INSERT IGNORE INTO Listens(GoogleUserID, SpotifyTrackID, PlayedAt) VALUES "
+        for item in itemsToAdd:
+            valueString = "('%s', '%s', '%s')," % (userID, item['track']['id'], item['played_at'])
+            insertIgnoreQuery += valueString
+        insertIgnoreQuery = insertIgnoreQuery[:-1] + ';'
+
+        db.query(insertIgnoreQuery)
+        db.conn.commit()
+        dbSemaphore.release()
+        
 
 def checkLocalDB():
     dbSemaphore.acquire()
@@ -207,7 +249,7 @@ def checkLocalDB():
 
     # enqueue this same function again
     thisFunction = Job(checkLocalDB, [])
-    timedThis = TimedJob(thisFunction, time.time() + 5) ##TODO change from 5 seconds to 25 mins
+    timedThis = TimedJob(thisFunction, time.time() + 600) ##TODO change from 5 seconds to 25 mins
     queue.enqueue(timedThis)
     
     # readFromDB()
@@ -240,6 +282,8 @@ dbSemaphore = threading.BoundedSemaphore(maxConnections)
 queue = SelfSort()  # make a self-sorting queue by time
 
 
+
+
 # for i in range(0, 15):
 #     checkLocalDB(i)
 
@@ -250,3 +294,4 @@ checkLocalDB()
 
 while True:
     loop()
+    #time.sleep(1)
