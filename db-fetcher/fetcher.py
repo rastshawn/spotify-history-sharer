@@ -166,6 +166,8 @@ def addLast50ToDatabase(userID):
     # make an http call to /user/:userID/last50RAW
     # convert json 
 
+    def timeApproxEqual(time1, time2):
+        return abs(time1 - time2) < 5
 
     # Database ignores duplicates using "insert ignore"
 
@@ -183,7 +185,9 @@ def addLast50ToDatabase(userID):
 
     items = last50['items']
     itemsToAdd = []
-    for item in items:
+
+    # reversed because the last50 from spotify is newest first
+    for item in reversed(items):
 
         try:
             timestamp = getSecondsSinceEpoch(datetime.datetime.strptime(item['played_at'], '%Y-%m-%dT%H:%M:%S.%fZ'))
