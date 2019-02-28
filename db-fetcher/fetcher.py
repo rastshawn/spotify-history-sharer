@@ -158,8 +158,11 @@ def getMostRecentSavedListen(userID):
     #users = db.query("Select GoogleUserID from Users")
     dbSemaphore.release()
 
-    return listens
+    ret = []
+    for listen in listens:
+        ret.append(listen)
 
+    return ret
 
 
 def addLast50ToDatabase(userID):
