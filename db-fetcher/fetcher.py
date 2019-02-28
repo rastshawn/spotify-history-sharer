@@ -148,7 +148,7 @@ class SelfSort:
 def getMostRecentSavedListen(userID):
     query = "SELECT PlayedAt FROM Listens WHERE "
     query += "GoogleUserID='" + userID + "'"
-    query += "ORDER BY PlayedAt DESC LIMIT 1"
+    query += "ORDER BY PlayedAt DESC"
     # query += "AND PlayedAt AFTER X"
     # TODO change query so that it only reads from a specified date
 
@@ -158,11 +158,7 @@ def getMostRecentSavedListen(userID):
     #users = db.query("Select GoogleUserID from Users")
     dbSemaphore.release()
 
-    ret = []
-    for listen in listens:
-        ret.append(listen)
-
-    return ret
+    return listens
 
 
 def addLast50ToDatabase(userID):
