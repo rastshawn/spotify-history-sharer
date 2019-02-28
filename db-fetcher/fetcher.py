@@ -1,49 +1,29 @@
 import threading
 import mysql.connector
 import time
-import sys
+import sys # for reading args
 import datetime
-
-
-# https://docs.python.org/3/library/http.client.html#examples
-# example making http calls
 import http.client, urllib.parse
 import json
-def makeHTTPCall():
-    conn = http.client.HTTPConnection("google.com")
-    conn.request("POST", "")
-    #conn.request("GET", "")
-    response = conn.getresponse()
-    data = response.read().decode('utf-8')
-    conn.close()
-    return data
-
-#print(makeHTTPCall())
-
-def getLast50Node(userID):
-
-    #TODO do this without using the server - link directly to spotify
-    url = 'trackrecord.shawnrast.com'
-    conn = http.client.HTTPConnection(url)
-    conn.request("GET", "/users/" + userID + "/last50RAW")
-    response = conn.getresponse()
-    last50JSON = response.read().decode('utf-8')
-    conn.close()
-    last50 = json.loads(last50JSON)
-    return last50
 
 
-## Global helper functions
+############# Global helper functions
+
+## Returns the the int number of seconds from epoch from a datetime obj
 def getSecondsSinceEpoch(dateTime):
     epoch = datetime.datetime.utcfromtimestamp(0)
     return (dateTime - epoch).total_seconds()
 
-# DB class modified from https://stackoverflow.com/a/982873
+
+
+############## Custom classes
+
+## Wrapper for database that automatically reconnects on errors
 class DB:
+    # modified from https://stackoverflow.com/a/982873
     conn = None
 
     def connect(self):
-
         dbConfig = {
             "database": "TrackRecord",
             "host": "192.168.1.2",
@@ -62,7 +42,6 @@ class DB:
             print(err)
             raise err
 
-
     def query(self, sql):
         try:
             cursor = self.conn.cursor(buffered=True)
@@ -76,26 +55,22 @@ class DB:
         return cursor
 
 
-
+## A grouping for functions and arguments that spawns a new thread when called
+## Basically just a wrapper for threading.Thread
 class Job:
     target = {}
     args = []
 
     def __init__(self, target, args):
-        #thread = threading.Thread(target=checkLocalDB, args=([i]))
         self.target = target
-        
         self.args = args
 
     def execute(self):
         thread = threading.Thread(target=self.target, args=self.args)
         thread.start()
 
-        # if len(self.args) > 0:
-        #     self.target(self.args[0])
-        # else:
-        #     self.target()
-
+## Attaches a Job object to a time. 
+## Is sortable with a comparator - sorts by time. Oldest first.
 class TimedJob:
     def __init__(self, job, time):
         self.job = job
@@ -111,7 +86,7 @@ class TimedJob:
         self.job.execute()
 
 
-
+## A self-sorting queue. Uses whatever sort item the objects have on them. 
 class SelfSort:
     def __init__(self):
         self.arr = []
@@ -131,106 +106,122 @@ class SelfSort:
         newArr = [None] * (len(self.arr) + 1)
         oldArrIndex = 0
         for val in self.arr:
-            
             if newValue < val:
                 break
-
             newArr[oldArrIndex] = self.arr[oldArrIndex]
             oldArrIndex += 1
-
         newArr[oldArrIndex] = newValue
-
         for i in range(oldArrIndex, len(self.arr)):
             newArr[i+1] = self.arr[i]
-
         self.arr = newArr
 
-def getMostRecentSavedListen(userID):
-    query = "SELECT PlayedAt FROM Listens WHERE "
-    query += "GoogleUserID='" + userID + "'"
-    query += "ORDER BY PlayedAt DESC"
-    # query += "AND PlayedAt AFTER X"
-    # TODO change query so that it only reads from a specified date
-
-    dbSemaphore.acquire()
-
-    listens = db.query(query)
-    #users = db.query("Select GoogleUserID from Users")
-    dbSemaphore.release()
-
-    return listens
 
 
+
+########### Functions
+
+## This is what actually calls the spotify API, 
+#   sees what songs are new in the history, 
+#   and adds the new ones to the database. 
 def addLast50ToDatabase(userID):
     # if error in getting http request, call refresh... maybe from web server
     # make an http call to /user/:userID/last50RAW
     # convert json 
 
-    def timeApproxEqual(time1, time2):
-        return abs(time1 - time2) < 5
+    ## This gets the listen datetime of the last stored song in the db. 
+    def getMostRecentSavedListen(userID):
+        query = "SELECT PlayedAt FROM Listens WHERE "
+        query += "GoogleUserID='" + userID + "'"
+        query += "ORDER BY PlayedAt DESC"
+        # query += "AND PlayedAt AFTER X"
+        # TODO change query so that it only reads from a specified date
 
-    # Database ignores duplicates using "insert ignore"
+        dbSemaphore.acquire()
+        listens = db.query(query)
+        dbSemaphore.release()
+        return listens
+
+    ## This returns the last 50 songs a user listened to, by calling the existing server.
+    ## This should be replaced. TODO
+    def getLast50Node(userID):
+        # https://docs.python.org/3/library/http.client.html#examples
+        #TODO do this without using the server - link directly to spotify
+        url = 'trackrecord.shawnrast.com'
+        conn = http.client.HTTPConnection(url)
+        conn.request("GET", "/users/" + userID + "/last50RAW")
+        response = conn.getresponse()
+        last50JSON = response.read().decode('utf-8')
+        conn.close()
+        last50 = json.loads(last50JSON)
+        return last50
+
 
     mostRecentListenTimestamp = getMostRecentSavedListen(userID)
     if mostRecentListenTimestamp.rowcount < 1:
         print("EMPTY SET")
+        # Nothing is in the DB for this user - set the first listen time to 1970
+        # This makes sure all the new records get added
         mostRecentListenTimestamp = 0
     else:
+        ## Store the datetime obj from the database
         mostRecentListenTimestamp = mostRecentListenTimestamp.fetchone()[0]
+        ## convert it into seconds
         mostRecentListenTimestamp = getSecondsSinceEpoch(mostRecentListenTimestamp)
 
+
     last50 = getLast50Node(userID)
-
-    
-
     items = last50['items']
     itemsToAdd = []
 
     # reversed because the last50 from spotify is newest first
     for item in reversed(items):
-
+        # Parse the timestamp for the listen from Spotify
         try:
             timestamp = getSecondsSinceEpoch(datetime.datetime.strptime(item['played_at'], '%Y-%m-%dT%H:%M:%S.%fZ'))
         except Exception as e:
-            datetime.datetime.strptime(item['played_at'], '%Y-%m-%dT%H:%M:%SZ')
+            timestamp = getSecondsSinceEpoch(datetime.datetime.strptime(item['played_at'], '%Y-%m-%dT%H:%M:%SZ'))
 
-        
         if timestamp <= mostRecentListenTimestamp+1:
             # This listen is already recorded in the database
+            # Because it is older than the most recent db entry for this user
             continue
         else:
-            #print(item['track']['name'], item['track']['id'], item['played_at'])
+            # this listen needs to be entered into the db
             itemsToAdd.append(item)
 
 
     # add the new stuff to the db
     if len(itemsToAdd) > 0:
         dbSemaphore.acquire()
-        insertIgnoreQuery = "INSERT IGNORE INTO Listens(GoogleUserID, SpotifyTrackID, PlayedAt) VALUES "
+        insertIgnoreQuery = "INSERT INTO Listens(GoogleUserID, SpotifyTrackID, PlayedAt) VALUES "
         for item in itemsToAdd:
             valueString = "('%s', '%s', '%s')," % (userID, item['track']['id'], item['played_at'])
             insertIgnoreQuery += valueString
         insertIgnoreQuery = insertIgnoreQuery[:-1] + ';'
 
+        # execute the query, then commit changes (they won't take hold without commit)
         db.query(insertIgnoreQuery)
-        db.conn.commit()
+        db.conn.commit() 
         dbSemaphore.release()
+
+    ## Now we have to record that we checked the time for the user. 
+    ## TODO
         
 
+## Check the database to see what users are due for a new check, and enqueue required checks. 
+## This gets run at the interval specified later on in the function. 
 def checkLocalDB():
     dbSemaphore.acquire()
 
     users = db.query("Select GoogleUserID, NextHistoryUpdate from Users")
-    #users = db.query("Select GoogleUserID from Users")
-
+    
     overdue = []
     now = time.time()
     for user in users:
-
-        userTime = getSecondsSinceEpoch(user[1])
+        timeOfNextCheck = getSecondsSinceEpoch(user[1])
         userID = user[0]
 
-        if userTime < now:
+        if timeOfNextCheck < now:
             job = Job(addLast50ToDatabase, [user[0]])
             overdue.append(job)
         else:
@@ -238,29 +229,28 @@ def checkLocalDB():
             timedJob = TimedJob(job, userTime)
             queue.enqueue(timedJob)
 
-        # enqueue overdue calls in batches of 5
-        numExtraSeconds = 1
+        # enqueue overdue calls in batches of 5, one second apart
+        secondsToAdd = 1
         for i in range(0, len(overdue)):
             job = overdue[i]
-            timedJob = TimedJob(job, now + numExtraSeconds)
+            timedJob = TimedJob(job, now + secondsToAdd)
             queue.enqueue(timedJob)
             if i%5 == 0:
-                numExtraSeconds += 1
+                secondsToAdd += 1
 
-        
+    ## Release the database - this ensures no information can change while the check is occurring
     dbSemaphore.release()
 
     # enqueue this same function again
     thisFunction = Job(checkLocalDB, [])
     timedThis = TimedJob(thisFunction, time.time() + 600) ##TODO change from 5 seconds to 25 mins
     queue.enqueue(timedThis)
-    
-    # readFromDB()
-    # .then(
-    # enqueue all overdue api calls in batches
-    # add all future calls to the queue
-    # queue.add(checkLocalDB)
 
+
+
+###################### Start the app!
+
+# Main app loop that checks the queue for jobs to run
 def loop():
     currentTime = time.time()
 
@@ -273,27 +263,15 @@ def loop():
         else:
             # queue is sorted, so we can skip forward
             break
-    
-
 
 db = DB()
 db.connect()
-
 maxConnections = 1
 dbSemaphore = threading.BoundedSemaphore(maxConnections)
-
-queue = SelfSort()  # make a self-sorting queue by time
-
-
-
-
-# for i in range(0, 15):
-#     checkLocalDB(i)
-
+queue = SelfSort()
 
 # this gets the 25-min db check interval going
 checkLocalDB()
-
 
 while True:
     loop()
