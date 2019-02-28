@@ -193,7 +193,8 @@ def addLast50ToDatabase(userID):
     # add the new stuff to the db
     if len(itemsToAdd) > 0:
         dbSemaphore.acquire()
-        insertIgnoreQuery = "INSERT INTO Listens(GoogleUserID, SpotifyTrackID, PlayedAt) VALUES "
+        ## INSERT IGNORE here because it truncates dates without complaining
+        insertIgnoreQuery = "INSERT IGNORE INTO Listens(GoogleUserID, SpotifyTrackID, PlayedAt) VALUES "
         for item in itemsToAdd:
             valueString = "('%s', '%s', '%s')," % (userID, item['track']['id'], item['played_at'])
             insertIgnoreQuery += valueString
