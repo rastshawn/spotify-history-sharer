@@ -14,7 +14,11 @@ def getSecondsSinceEpoch(dateTime):
     epoch = datetime.datetime.utcfromtimestamp(0)
     return (dateTime - epoch).total_seconds()
 
-
+## returns a date equal to 25 mins from now
+def twentyFiveMinutesFromNow():
+    now = datetime.datetime.now()
+    plus25 = now + datetime.timedelta(minutes=25)
+    return plus25
 
 ############## Custom classes
 
@@ -155,6 +159,14 @@ def addLast50ToDatabase(userID):
         last50 = json.loads(last50JSON)
         return last50
 
+    def updateUserNextHistoryUpdateTime(userID):
+        nextUpdate = str(twentyFiveMinutesFromNow())
+        query = "UPDATE Users SET NextHistoryUpdate = '" + nextUpdate
+        query = query + "' WHERE GoogleUserID = '" + userID + "'"
+        print(query)
+        db.query(query)
+
+
 
     mostRecentListenTimestamp = getMostRecentSavedListen(userID)
     if mostRecentListenTimestamp.rowcount < 1:
@@ -202,6 +214,7 @@ def addLast50ToDatabase(userID):
 
         # execute the query, then commit changes (they won't take hold without commit)
         db.query(insertIgnoreQuery)
+        updateUserNextHistoryUpdateTime(userID)
         db.conn.commit() 
         dbSemaphore.release()
 
@@ -221,6 +234,8 @@ def checkLocalDB():
     for user in users:
         timeOfNextCheck = getSecondsSinceEpoch(user[1])
         userID = user[0]
+
+        #print("time of check: \t%s\nnow:\t\t%s" % (timeOfNextCheck, now))
 
         if timeOfNextCheck < now:
             job = Job(addLast50ToDatabase, [user[0]])
