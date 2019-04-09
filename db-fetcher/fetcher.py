@@ -14,11 +14,11 @@ def getSecondsSinceEpoch(dateTime):
     epoch = datetime.datetime.utcfromtimestamp(0)
     return (dateTime - epoch).total_seconds()
 
-## returns a date equal to 25 mins from now
-def twentyFiveMinutesFromNow():
+## returns a date equal to n mins from now
+def nMinutesFromNow(n):
     now = datetime.datetime.now()
-    plus25 = now + datetime.timedelta(minutes=25)
-    return plus25
+    plusN = now + datetime.timedelta(minutes=n)
+    return plusN
 
 ############## Custom classes
 
@@ -160,7 +160,7 @@ def addLast50ToDatabase(userID):
         return last50
 
     def updateUserNextHistoryUpdateTime(userID):
-        nextUpdate = str(twentyFiveMinutesFromNow())
+        nextUpdate = str(nMinutesFromNow(5))
         query = "UPDATE Users SET NextHistoryUpdate = '" + nextUpdate
         query = query + "' WHERE GoogleUserID = '" + userID + "'"
         print(query)
