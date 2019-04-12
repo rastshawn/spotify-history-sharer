@@ -89,4 +89,21 @@ module.exports = class Database {
         })  
     }
 
+    getHistoryByGoogleID(googleID, start, end) {
+        return new Promise((resolve, reject) => {
+            let q = `SELECT SpotifyTrackID, PlayedAt FROM Listens WHERE GoogleUserID = '${googleID}'`;
+            if (start && end) {
+                q += `AND PlayedAt BETWEEN ${pool.escape(start)} AND ${pool.escape(end)}`;
+            }
+            q += ' ORDER BY PlayedAt DESC;';
+
+            pool.query(q, (error, results, fields) => {
+                if (error) reject(error);
+                else {
+                    resolve(results);
+                }
+            });
+        })
+    }
+
 }

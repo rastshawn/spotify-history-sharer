@@ -76,5 +76,16 @@ module.exports = function() {
 
 	};
 
+	this.getTrackInfoBySpotifyTrackID = async function(spotifyTrackID) {
+		// make a call to track info endpoint, using client credentials flow. 
+
+		// TODO Make function that requests access token for non-user info like track info. 
+		// https://developer.spotify.com/documentation/general/guides/authorization-guide/#client-credentials-flow
+
+		// call:
+		// GET https://api.spotify.com/v1/tracks/{id}
+		// info: https://developer.spotify.com/documentation/web-api/reference/tracks/get-track/
+	};
+
 
 };

@@ -22,8 +22,10 @@ module.exports = function(app) {
         UserInfoInterface.getUserByGoogleID(req.params.userID)
             .then(spotifyInterface.getLast50Songs)
             .then((response) => {
+                return templateObjectBuilder.last50(response);
+            }).then((response) => {
 
-                let hbs = Object.assign(templateObjectBuilder.last50(response), {layout: false});
+                let hbs = Object.assign(response, {layout: false});
 
                 res.render('table', hbs);
             })
@@ -39,6 +41,21 @@ module.exports = function(app) {
             .then(spotifyInterface.getLast50Songs)
             .then((response) => {
                 res.send(response);
+            })
+            .catch((err) => {
+                console.log(err);
+                res.send("Something went wrong.");
+            });
+    });
+
+    app.get('/users/:userID/history', (req, res) => {
+
+        UserInfoInterface.getHistoryByGoogleID(req.params.userID)
+            .then((response) => {
+                return templateObjectBuilder.history(response);
+            }).then((response) => {
+                let hbs = Object.assign(response, {layout: false});
+                res.render('table', hbs);
             })
             .catch((err) => {
                 console.log(err);
@@ -97,6 +114,10 @@ module.exports = function(app) {
                     req.session.destroy();
                     res.redirect('/login');
                 }
+            });
+
+            app.get('/account', (req, res) => {
+                res.send('To delete your account, email rastshawn@gmail.com');
             });
 
         

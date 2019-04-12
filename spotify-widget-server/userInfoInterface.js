@@ -25,6 +25,10 @@ class UserInfoInterface {
             .then(this.getUserByGoogleID);
     }
 
+    static getHistoryByGoogleID(googleID) {
+        return database.getHistoryByGoogleID(googleID);
+    }
+
 }
 
 //UserInfoInterface.database = {};

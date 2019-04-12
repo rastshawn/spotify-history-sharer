@@ -42,7 +42,7 @@ module.exports = function() {
                     return;
                 }
                 console.log("not logged in");
-                res.redirect('/public/login.html');
+                res.render('login');
             }
         });
 
@@ -86,7 +86,7 @@ module.exports = function() {
 
     this.logoutGET = (req, res) => {
         req.session.destroy();
-        res.redirect('/public/logout.html');
+        res.render('logout');
 
     };
 
