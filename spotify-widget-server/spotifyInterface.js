@@ -1,5 +1,6 @@
 const rp = require('request-promise');
 const OAuth = require('./oauth');
+const ImplicitGrant = require('./implicitGrant');
 module.exports = function() {
 
 	this.getLast50Songs = function(user) {
@@ -86,6 +87,65 @@ module.exports = function() {
 		// GET https://api.spotify.com/v1/tracks/{id}
 		// info: https://developer.spotify.com/documentation/web-api/reference/tracks/get-track/
 	};
+
+	this.getTracksInfoBySpotifyTrackID = function(trackIDs) {
+
+		// max of 50... recursively apply the rest
+		
+		if (trackIDs.length <= 50) {
+			let commaSeparatedList = trackIDs.join();
+			// remove last comma
+			//commaSeparatedList = commaSeparatedList.substring(0, commaSeparatedList.length - 1);
+
+
+			return ImplicitGrant.getCode().then((token) => {
+						
+				let call = {
+					method: 'get',
+					uri: 'https://api.spotify.com/v1/tracks',
+					qs: { // query string params
+						ids: commaSeparatedList
+					},
+					headers: {
+						'Authorization': 'Bearer ' + token
+					},
+					json: true	
+				};
+
+				return rp(call)
+					.then((response) => {
+						return response.tracks;		
+					})
+					.catch((err) => {
+						console.log(err);
+						//reject("Couldn't get info - is application authorized?");
+						
+					});
+			});
+
+
+		} else {
+			let first50 = [];
+			let remaining = [];
+			
+			for (let i = 0; i<trackIDs.length; i++){
+				if (i<50){
+					first50.push(trackIDs[i]);
+				} else {
+					remaining.push(trackIDs[i]);
+				}
+			}
+
+			return Promise.all([
+				this.getTracksInfoBySpotifyTrackID(first50),
+				this.getTracksInfoBySpotifyTrackID(remaining)
+			]).then((resultsArray) => {
+				return resultsArray[0].concat(resultsArray[1]);
+			});
+			
+		}
+	}
+
 
 
 };

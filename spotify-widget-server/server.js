@@ -6,6 +6,8 @@ const OAuth = require('./oauth');
 
 
 module.exports = function(app) {
+
+    // App Login links (and Google login)
     app.get('/login', (req, res) => {
         account.loginGET(req, res, app);
     });
@@ -16,6 +18,22 @@ module.exports = function(app) {
     app.get('/logout', (req, res) => {
         account.logoutGET(req, res);
     });
+
+    // Spotify OAuth links
+    app.get('/authorize', (req, res) => {
+        OAuth.authorize(req, res);
+    });
+
+    app.get('/saveCode', (req, res) => {
+        OAuth.saveCode(req, res);
+    });
+
+
+
+
+
+
+
 
     app.get('/users/:userID/last50', (req, res) => {
 
@@ -49,13 +67,24 @@ module.exports = function(app) {
     });
 
     app.get('/users/:userID/history', (req, res) => {
-
+        
         UserInfoInterface.getHistoryByGoogleID(req.params.userID)
             .then((response) => {
-                return templateObjectBuilder.history(response);
-            }).then((response) => {
+                //return templateObjectBuilder.history(response);
+                let trackIDs = response.map((track) => {
+                    return track.SpotifyTrackID;
+                });
+                return spotifyInterface.getTracksInfoBySpotifyTrackID(trackIDs).then((spotifyTrackInfo) => {
+                    for (let i = 0; i<spotifyTrackInfo.length; i++){
+                        spotifyTrackInfo[i].PlayedAt = response[i].PlayedAt;
+                    }
+
+                    return spotifyTrackInfo;
+                });
+            }).then(templateObjectBuilder.history).then((response) => {
                 let hbs = Object.assign(response, {layout: false});
                 res.render('table', hbs);
+                //res.send(response);
             })
             .catch((err) => {
                 console.log(err);
@@ -63,13 +92,7 @@ module.exports = function(app) {
             });
     });
     
-    app.get('/authorize', (req, res) => {
-        OAuth.authorize(req, res);
-    });
 
-    app.get('/saveCode', (req, res) => {
-        OAuth.saveCode(req, res);
-    });
 
     app.get('/', (req, res) => {
         let hbs = {

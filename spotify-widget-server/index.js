@@ -149,6 +149,9 @@ const spotifyInterface = new (require('./spotifyInterface'))();
 const OAuth = require('./oauth');
 new OAuth(app);
 
+const ImplicitGrant = require('./implicitGrant');
+new ImplicitGrant(app);
+
 const server = require('./server')(app);
 const UserInfoInterface = require('./userInfoInterface');
 /*

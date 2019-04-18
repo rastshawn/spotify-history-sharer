@@ -47,13 +47,11 @@ module.exports = {
     }, 
 
     history : async function(history){
-        
 
-        
         let promises = [];
         for(let i = 0; i<history.length; i++) {
-            /*
-            let track = history.items[i].track;
+            
+            let track = history[i];
             let imageURL = '';
             for (let j = 0; j<track.album.images.length; j++){
                 
@@ -73,25 +71,25 @@ module.exports = {
             let name = `<a href='${trackURL}'>${track.name}</a>`;
             let artists = artistsString;
             let albumArt = `<img class='album' src='${imageURL}'></img>`;
-            */
+            
             promises.push(new Promise((resolve, reject) => {
-                let name = `${history[i].SpotifyTrackID}`;
+                //let name = `${history[i].SpotifyTrackID}`;
                 let playedAt = `${history[i].PlayedAt}`;
 
                 resolve({
                     
-                    //albumArt : albumArt,
+                    albumArt : albumArt,
                     name : name,
-                    ///artists : artists
+                    artists : artists,
                     playedAt : playedAt
                 });
             }));
         }
 
         let fields = [
-            //"Artwork",
+            "Artwork",
             "Track",
-            //"Artists",
+            "Artists",
             "Listen Date"
         ];
 
