@@ -19,6 +19,10 @@ document.addEventListener("DOMContentLoaded", (e) => {
         let fromDate = (from.value) ? new Date(from.value) : new Date('01/01/2019');
         let toDate = (to.value) ? new Date(to.value) : new Date();
 
+
+        fromDate = fromDate.getTime();
+        toDate = toDate.getTime();
+
         if (fromDate > toDate) {
             // todo 
             alert('TO must be after FROM');
@@ -26,7 +30,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
 
         console.log(`From: ${fromDate}, To: ${toDate}`)
 
-        let src = `/users/${userID}/history`;
+        let src = `/users/${userID}/history?from=${fromDate}&to=${toDate}`;
         display.src = src;
     });
 });

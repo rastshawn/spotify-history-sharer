@@ -97,6 +97,7 @@ module.exports = class Database {
             }
             q += ' ORDER BY PlayedAt DESC;';
 
+            console.log(q);
             pool.query(q, (error, results, fields) => {
                 if (error) reject(error);
                 else {

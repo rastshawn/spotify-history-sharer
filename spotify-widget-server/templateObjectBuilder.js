@@ -48,6 +48,17 @@ module.exports = {
 
     history : async function(history){
 
+        if (!history || !history.length) {
+            return {
+                data: {
+                    results: "no results"
+                },
+                fields: [
+                    "No results"
+                ]
+            };
+        }
+
         let promises = [];
         for(let i = 0; i<history.length; i++) {
             

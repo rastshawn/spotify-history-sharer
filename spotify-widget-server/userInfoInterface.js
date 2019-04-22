@@ -25,8 +25,8 @@ class UserInfoInterface {
             .then(this.getUserByGoogleID);
     }
 
-    static getHistoryByGoogleID(googleID) {
-        return database.getHistoryByGoogleID(googleID);
+    static getHistoryByGoogleID(googleID, start, end) {
+        return database.getHistoryByGoogleID(googleID, start, end);
     }
 
 }

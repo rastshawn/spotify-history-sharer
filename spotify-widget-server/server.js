@@ -68,13 +68,47 @@ module.exports = function(app) {
 
     app.get('/users/:userID/history', (req, res) => {
         
-        UserInfoInterface.getHistoryByGoogleID(req.params.userID)
+        let from = new Date('01/01/2019');
+        let to = new Date();
+        console.log(req.query.from);
+        try {
+            if (req.query.from) {
+                from = new Date(parseInt(req.query.from));
+            }
+        } catch (e) {
+            from = new Date('01/01/2019');
+        }
+
+        try {
+            if (req.query.to) {
+                to = new Date(parseInt(req.query.to));
+            }
+        } catch (e) {
+
+            // TODO MUST ABSOLUTELY CHECK FOR VALID DATES.....
+            // NaN does not throw error
+            to = new Date();  
+        }
+
+
+
+        // to = undefined;
+        // from = undefined;
+
+        UserInfoInterface.getHistoryByGoogleID(req.params.userID, from, to)
             .then((response) => {
                 //return templateObjectBuilder.history(response);
                 let trackIDs = response.map((track) => {
                     return track.SpotifyTrackID;
                 });
                 return spotifyInterface.getTracksInfoBySpotifyTrackID(trackIDs).then((spotifyTrackInfo) => {
+                    if (!spotifyTrackInfo) {
+                        throw {
+                            msg: "spotify track info is null"
+                        };
+                        return;
+                        
+                    }
                     for (let i = 0; i<spotifyTrackInfo.length; i++){
                         spotifyTrackInfo[i].PlayedAt = response[i].PlayedAt;
                     }
