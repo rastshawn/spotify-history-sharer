@@ -30,7 +30,7 @@ class DB:
     def connect(self):
         dbConfig = {
             "database": "TrackRecord",
-            "host": "192.168.1.2",
+            "host": "localhost",
             "user": sys.argv[1],
             "password": sys.argv[2]
         }
@@ -150,7 +150,7 @@ def addLast50ToDatabase(userID):
     def getLast50Node(userID):
         # https://docs.python.org/3/library/http.client.html#examples
         #TODO do this without using the server - link directly to spotify
-        url = 'trackrecord.shawnrast.com'
+        url = 'trackrecordlive.shawnrast.com'
         conn = http.client.HTTPConnection(url)
         conn.request("GET", "/users/" + userID + "/last50RAW")
         response = conn.getresponse()
@@ -232,7 +232,11 @@ def checkLocalDB():
     overdue = []
     now = time.time()
     for user in users:
-        timeOfNextCheck = getSecondsSinceEpoch(user[1])
+
+        if user[1] is None:
+            timeOfNextCheck = 0
+        else:
+            timeOfNextCheck = getSecondsSinceEpoch(user[1])
         userID = user[0]
 
         #print("time of check: \t%s\nnow:\t\t%s" % (timeOfNextCheck, now))
