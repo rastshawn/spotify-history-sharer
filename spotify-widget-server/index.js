@@ -119,7 +119,7 @@ app.use(session({
     store: sessionStore,
     saveUninitialized: false,
     cookie: {
-        secure: true // uncomment when running on https
+        //secure: true // uncomment when running on https
         // TODO set secure to true
     }
 }));
