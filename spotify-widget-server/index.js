@@ -19,7 +19,7 @@ app.set('views', views);
 
 
 //app.host = 'http://preznix.shawnrast.com:' + port;
-app.host = 'http://trackrecordlive.shawnrast.com';
+app.host = 'https://trackrecordlive.shawnrast.com';
 app.clientID = '';
 app.clientSecret = '';
 
@@ -119,7 +119,7 @@ app.use(session({
     store: sessionStore,
     saveUninitialized: false,
     cookie: {
-        //secure: true // uncomment when running on https
+        secure: true // uncomment when running on https
         // TODO set secure to true
     }
 }));
