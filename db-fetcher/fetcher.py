@@ -246,7 +246,7 @@ def checkLocalDB():
             overdue.append(job)
         else:
             job = Job(addLast50ToDatabase, [user[0]])
-            timedJob = TimedJob(job, userTime)
+            timedJob = TimedJob(job, timeOfNextCheck)
             queue.enqueue(timedJob)
 
         # enqueue overdue calls in batches of 5, one second apart

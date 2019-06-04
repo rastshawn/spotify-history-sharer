@@ -19,7 +19,7 @@ app.set('views', views);
 
 
 //app.host = 'http://preznix.shawnrast.com:' + port;
-app.host = 'http://trackrecordlive.shawnrast.com';
+app.host = 'https://trackrecordlive.shawnrast.com';
 app.clientID = '';
 app.clientSecret = '';
 
