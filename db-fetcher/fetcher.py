@@ -276,10 +276,12 @@ def loop():
 
     for job in queue:
         if job.time < currentTime:
-            job.execute()
-
             # remove job from queue
             queue.arr = [job for job in queue.arr if not (job.time < currentTime)]
+
+            job.execute()
+
+
         else:
             # queue is sorted, so we can skip forward
             break
@@ -295,4 +297,4 @@ checkLocalDB()
 
 while True:
     loop()
-    #time.sleep(1)
+    #time.sleep(1) #let's make this wait one second between checks... should prevent multiples being entered
