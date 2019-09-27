@@ -249,14 +249,14 @@ def checkLocalDB():
             timedJob = TimedJob(job, timeOfNextCheck)
             queue.enqueue(timedJob)
 
-        # enqueue overdue calls in batches of 5, one second apart
-        secondsToAdd = 1
-        for i in range(0, len(overdue)):
-            job = overdue[i]
-            timedJob = TimedJob(job, now + secondsToAdd)
-            queue.enqueue(timedJob)
-            if i%5 == 0:
-                secondsToAdd += 1
+    # enqueue overdue calls in batches of 5, one second apart
+    secondsToAdd = 1
+    for i in range(0, len(overdue)):
+        job = overdue[i]
+        timedJob = TimedJob(job, now + secondsToAdd)
+        queue.enqueue(timedJob)
+        if i%5 == 0:
+            secondsToAdd += 1
 
     ## Release the database - this ensures no information can change while the check is occurring
     dbSemaphore.release()
