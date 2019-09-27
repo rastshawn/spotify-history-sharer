@@ -19,7 +19,7 @@ app.set('views', views);
 
 
 //app.host = 'http://preznix.shawnrast.com:' + port;
-app.host = 'https://trackrecordlive.shawnrast.com';
+app.host = 'https://trackrecordlive.shawnrast.com'; // default, should be overwritten by launch variable
 app.clientID = '';
 app.clientSecret = '';
 
@@ -50,7 +50,8 @@ let args = [
     new Arg('session', 'sessionSecret', app),
     new Arg('testID', 'testID', app, true),
     new Arg('dbUser', 'username', dbCreds),
-    new Arg('dbPass', 'password', dbCreds)
+    new Arg('dbPass', 'password', dbCreds),
+    new Arg('host', 'host', app)
 ];
 
 
