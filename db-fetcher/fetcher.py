@@ -150,7 +150,7 @@ def addLast50ToDatabase(userID):
     def getLast50Node(userID):
         # https://docs.python.org/3/library/http.client.html#examples
         #TODO do this without using the server - link directly to spotify
-        url = 'trackrecordlive.shawnrast.com'
+        url = sys.argv[3]
         conn = http.client.HTTPConnection(url)
         conn.request("GET", "/users/" + userID + "/last50RAW")
         response = conn.getresponse()
