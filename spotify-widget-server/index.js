@@ -51,7 +51,7 @@ let args = [
     new Arg('testID', 'testID', app, true),
     new Arg('dbUser', 'username', dbCreds),
     new Arg('dbPass', 'password', dbCreds),
-    new Arg('host', 'host', app)
+    new Arg('host', 'host', app, true)
 ];
 
 
