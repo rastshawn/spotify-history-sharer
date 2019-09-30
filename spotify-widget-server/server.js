@@ -3,7 +3,7 @@ const templateObjectBuilder = require('./templateObjectBuilder');
 const UserInfoInterface = require('./userInfoInterface');
 const spotifyInterface = new (require('./spotifyInterface'))();
 const OAuth = require('./oauth');
-
+const cors = require('cors');
 
 module.exports = function(app) {
 
@@ -53,7 +53,8 @@ module.exports = function(app) {
             });
     });
 
-    app.get('/users/:userID/last50RAW', (req, res) => {
+	app.options('/users/:userID/last50RAW', cors());
+    app.get('/users/:userID/last50RAW', cors(), (req, res) => {
 
         UserInfoInterface.getUserByGoogleID(req.params.userID)
             .then(spotifyInterface.getLast50Songs)
