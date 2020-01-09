@@ -8,6 +8,7 @@ Vue.use(VueRouter);
 
 import Last50 from '@/components/Last50';
 import Home from '@/components/Home';
+import TimeMachine from '@/components/TimeMachine';
 
 const router = new VueRouter({
   routes: [
@@ -20,6 +21,11 @@ const router = new VueRouter({
       path: '/Last50',
       name: 'Last50',
       component: Last50 
+    },
+    {
+      path: '/TimeMachine',
+      name: 'TimeMachine',
+      component: TimeMachine 
     }
   ]
 });
