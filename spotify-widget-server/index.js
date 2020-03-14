@@ -3,7 +3,7 @@ const express = require('express');
 const session = require('express-session');
 const exphbs = require('express-handlebars');
 const app = express();
-const port = 6001;
+const port = 6002;
 
 const path = require('path');
 
