@@ -21,9 +21,10 @@ export class AuthController {
   // }
 
   @Post('/google/oauth')
-  getGoogle(@Body() body) {
+  async getGoogle(@Body() body) {
     if (body.idtoken) {
-      return this.authService.googleLogin(body.idtoken);
+      const response = await this.authService.googleLogin(body.idtoken);
+      return response;
     } else {
       throw new HttpException("No idtoken", 400);
     }
