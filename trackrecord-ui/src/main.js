@@ -2,8 +2,10 @@ import Vue from 'vue'
 import App from './App.vue'
 import vuetify from './plugins/vuetify';
 import VueRouter from 'vue-router';
+import DatetimePicker from 'vuetify-datetime-picker';
 
 Vue.use(VueRouter);
+Vue.use(DatetimePicker);
 
 
 import Last50 from '@/components/Last50';

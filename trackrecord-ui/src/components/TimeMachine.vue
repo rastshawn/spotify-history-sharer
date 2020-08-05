@@ -1,13 +1,14 @@
 <template>
   <v-container>
-    <v-form>
-      <v-input v-model="fromTime" label="From"></v-input>
-      <v-input v-model="toTime" label="To"></v-input>
-    </v-form>
+    <v-col cols="6">
+
+        <v-datetime-picker label="From" v-model="fromTime"></v-datetime-picker>
+
+  </v-col>
+  <v-col cols="6">
+        <v-datetime-picker label="To" v-model="toTime"></v-datetime-picker>
+  </v-col>
     <v-btn v-on:click="loadTracks()">LOAD</v-btn>
-    <!--
-    <v-btn v-on:click="loadTracks">Load</v-btn>
-    -->
     <v-data-table
     :headers="headers"
     :items="tracks"
@@ -36,6 +37,7 @@
 
 <script>
 import {makeCall} from '@/services/web.service.js';
+
 export default {
   props: {
     //googleUserID, // 114453869888691414495
@@ -54,19 +56,24 @@ export default {
 
     },
     fromTime: '',
+    fromMenu: false,
     toTime: '',
+    toMenu: false,
     tracks: []
   }),
   computed: {
     fromTimeMillis() {
-      // TODO
-      //return '1546322400000';
-      return this.fromTime;
+      if (this.fromTime){
+        return this.fromTime.getTime();
+      } 
+      return null;
+
     },
     toTimeMillis() {
-      // TODO
-      //return '1578538290456';
-      return this.toTime;
+      if (this.toTime) {
+        return this.toTime.getTime();
+      }
+      return null;
     }
   },
   created: async function(/*event*/) {
@@ -81,7 +88,7 @@ export default {
       const responseJson = await makeCall(
         url,
         'GET', 
-        //true // sets to json
+        true // sets to json
       );
       
       let tracks = [];
