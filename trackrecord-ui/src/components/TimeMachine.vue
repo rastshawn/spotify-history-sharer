@@ -1,5 +1,10 @@
 <template>
   <v-container>
+    <v-form>
+      <v-input v-model="fromTime" label="From"></v-input>
+      <v-input v-model="toTime" label="To"></v-input>
+    </v-form>
+    <v-btn v-on:click="loadTracks()">LOAD</v-btn>
     <!--
     <v-btn v-on:click="loadTracks">Load</v-btn>
     -->
@@ -30,7 +35,11 @@
 </template>
 
 <script>
+import {makeCall} from '@/services/web.service.js';
 export default {
+  props: {
+    //googleUserID, // 114453869888691414495
+  },
   data: () => ({
     headers: [
       { text: 'Artwork', value: 'artwork', sortable:false},
@@ -44,37 +53,53 @@ export default {
     components: {
 
     },
+    fromTime: '',
+    toTime: '',
     tracks: []
   }),
-  created: async function(/*event*/) {
-    const response = await fetch(
-      "http://localhost:6001/users/114453869888691414495/historyRAW?from=1546322400000&to=1578538290456",
-      {
-        method: 'GET',
-        mode: 'cors',
-        cache: 'no-cache',
-        headers: {
-          'Content-Type' : 'application/json'
-        }
-      }
-    );
-    const responseJson = await response.json();
-    
-    let tracks = [];
-    console.log(responseJson[0]);
-    for (let i in responseJson) {
-      let t = responseJson[i];
-      let track = {
-        "title" : t.name,
-        "artwork" : t.album.images[0].url,
-        "date" : t.PlayedAt,
-        "artists" : t.album.artists
-      };
-
-      tracks.push(track);
+  computed: {
+    fromTimeMillis() {
+      // TODO
+      //return '1546322400000';
+      return this.fromTime;
+    },
+    toTimeMillis() {
+      // TODO
+      //return '1578538290456';
+      return this.toTime;
     }
+  },
+  created: async function(/*event*/) {
+    this.loadTracks();
+  },
+  methods: {
+    async loadTracks() {
+      let url = `/api/users/114453869888691414495/historyRAW`;
+      if (this.fromTime && this.toTime) {
+        url += `?from=${this.fromTimeMillis}&to=${this.toTimeMillis}`;
+      }
+      const responseJson = await makeCall(
+        url,
+        'GET', 
+        //true // sets to json
+      );
+      
+      let tracks = [];
+      console.log(responseJson[0]);
+      for (let i in responseJson) {
+        let t = responseJson[i];
+        let track = {
+          "title" : t.name,
+          "artwork" : t.album.images[0].url,
+          "date" : t.PlayedAt,
+          "artists" : t.album.artists
+        };
 
-    this.tracks = tracks;
+        tracks.push(track);
+      }
+
+      this.tracks = tracks;
+    }
   }
   
 };
