@@ -81,7 +81,7 @@ export default {
   },
   methods: {
     async loadTracks() {
-      let url = `/api/users/114453869888691414495/historyRAW`;
+      let url = `/api/users/${localStorage.getItem("googleUserID")}}/historyRAW`;
       if (this.fromTime && this.toTime) {
         url += `?from=${this.fromTimeMillis}&to=${this.toTimeMillis}`;
       }

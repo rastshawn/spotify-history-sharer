@@ -3,16 +3,19 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify';
 import VueRouter from 'vue-router';
 import DatetimePicker from 'vuetify-datetime-picker';
+import GoogleLogin from 'vue-google-login';
 
 Vue.use(VueRouter);
 Vue.use(DatetimePicker);
+Vue.use(GoogleLogin);
 
 
 import Last50 from '@/components/Last50';
 import Home from '@/components/Home';
 import TimeMachine from '@/components/TimeMachine';
 import Login from '@/components/Login';
-
+import Logout from '@/components/Logout';
+import SpotifyConnect from '@/components/SpotifyConnect';
 const router = new VueRouter({
   routes: [
     {
@@ -40,6 +43,19 @@ const router = new VueRouter({
       path: '/Login',
       name: 'Login',
       component: Login 
+    },
+    {
+      path: '/Logout',
+      name: 'Logout',
+      component: Logout 
+    },
+    {
+      path: '/SpotifyConnect',
+      name: 'SpotifyConnect',
+      component: SpotifyConnect, 
+      meta: {
+        requiresAuth: true
+      }
     },
   ]
 });

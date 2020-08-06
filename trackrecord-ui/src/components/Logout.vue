@@ -1,9 +1,7 @@
 <template>
   <v-container>
     <div>
-        <GoogleLogin :params="googleAuth" :renderParams="renderParams" :onSuccess="onSuccess" :onFailure="onFailure" :logoutButton="false"></GoogleLogin>
-      <button v-on:click="helloWorld()">Test credentials</button>
-      <router-link to="/SpotifyConnect">Connect to Spotify</router-link>
+        <GoogleLogin :params="googleAuth" :renderParams="renderParams" :onSuccess="onSuccess" :onFailure="onFailure" :logoutButton="true">LOG OUT</GoogleLogin>
     </div>
   </v-container>
 </template>
@@ -16,25 +14,15 @@ export default {
     GoogleLogin
   },
   methods: {
-    async onSuccess(googleUser) {
-      console.log(googleUser);
-      // make a login call to the back end, sending the google user token
-      try {
-        const result = await sendAuthToken(googleUser);
-      } catch (e) {
-        console.error(e);
-      }
-
+    async onSuccess() {
+      console.log("logged out");
+      localStorage.removeItem("jwt");
     },
     onCurrentUser: (googleUser) => {
       this.onSuccess(googleUser);
     },
     onFailure: (err) => {
       console.log(err);
-    },
-    async helloWorld () {
-      let response = await makeCall('/api/');
-      console.log(response);
     }
   },
   data: () => {
@@ -47,7 +35,6 @@ export default {
         height: 50,
         longtitle: true
       },
-      logout: false
     }
   }
 
