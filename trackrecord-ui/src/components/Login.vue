@@ -21,9 +21,6 @@ export default {
       // make a login call to the back end, sending the google user token
       try {
         const result = await sendAuthToken(googleUser);
-
-        console.log(result);
-        localStorage.setItem("jwt", result.access_token);
       } catch (e) {
         console.error(e);
       }
