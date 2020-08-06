@@ -23,6 +23,7 @@ export default {
         const result = await sendAuthToken(googleUser);
 
         console.log(result);
+        localStorage.setItem("jwt", result.access_token);
       } catch (e) {
         console.error(e);
       }

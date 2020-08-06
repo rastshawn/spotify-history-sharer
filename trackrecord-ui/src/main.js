@@ -23,12 +23,18 @@ const router = new VueRouter({
     {
       path: '/Last50',
       name: 'Last50',
-      component: Last50 
+      component: Last50, 
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/TimeMachine',
       name: 'TimeMachine',
-      component: TimeMachine 
+      component: TimeMachine, 
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/Login',
@@ -36,6 +42,21 @@ const router = new VueRouter({
       component: Login 
     },
   ]
+});
+
+// https://www.digitalocean.com/community/tutorials/how-to-set-up-vue-js-authentication-and-route-handling-using-vue-router
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (localStorage.getItem('jwt') == null) {
+      next({
+        path:'/Login'
+      })
+    } else {
+      next()
+    }
+  } else {
+    next()
+  }
 });
 
 
