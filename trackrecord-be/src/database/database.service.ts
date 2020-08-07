@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { User } from './users.service';
 import * as mysql from 'mysql';
+import { User } from 'src/types/user.dto';
 require('dotenv').config() // TODO needs to be in this file because of bug? 
 
 let buildUserObj = function(dbResults): User {

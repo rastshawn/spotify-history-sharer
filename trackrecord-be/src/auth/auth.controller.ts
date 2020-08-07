@@ -2,7 +2,7 @@ import { Controller, Get, UseGuards, Post, Request, Body, HttpException } from '
 import { LocalAuthGuard } from './local-auth.guard';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import {DatabaseService} from '../users/database.service'
+import {DatabaseService} from '../database/database.service'
 
 @Controller('/auth')
 export class AuthController {

@@ -1,6 +1,6 @@
 // modified from NestJS Auth demo
 import { Injectable, HttpService } from '@nestjs/common';
-import { User, UsersService } from '../users/users.service';
+import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
