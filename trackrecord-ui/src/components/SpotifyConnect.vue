@@ -6,17 +6,41 @@
 
 <script>
 import {makeCall} from '@/services/web.service.js';
+const clientID = process.env.VUE_APP_SPOTIFY_CLIENT_ID;
+const host = process.env.VUE_APP_HOST;
 export default {
   components: {
   },
   methods: {
+    async sendCodeAndRedirect() {
+      if (this.$route.query && this.$route.query.code) {
+        // have an auth code, send to server, then redirect to app
+        
+        const body = {
+          userID: this.$route.query.state,
+          code: this.$route.query.code
+        };
+
+        const saveCodeResponse = await this.makeCall('/api/auth/spotify/saveCode', 'POST', true, body);
+        
+      } else {
+        // no auth code, redirect to the auth link
+        window.location.href=this.link;
+      }
+    }
+  },
+  created() {
+    this.sendCodeAndRedirect();
+  },
+  activated() {
+    this.sendCodeAndRedirect();
   },
   computed: {
     link() {
-      const clientID = ''; // TODO remove hardcoding
+
       const userID = localStorage.getItem("googleUserID");
       const scope = 'user-read-recently-played';
-      const redirectURI = 'https://trackrecord.shawnrast.com/SaveCode';
+      const redirectURI = host + '/SpotifyConnect';
       return 'https://accounts.spotify.com/authorize' +
                         '?response_type=code' +
                         '&client_id=' + clientID + 

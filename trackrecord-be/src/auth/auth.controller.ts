@@ -30,6 +30,16 @@ export class AuthController {
     }
   }
 
+  @Post('/spotify/saveCode')
+  async saveSpotifyCode(@Body() body) {
+    if (body.code && body.userID) {
+      // const response = await this.authService.googleLogin(body.idtoken);
+      // return response;
+    } else {
+      throw new HttpException("bad request", 400);
+    }
+  }
+
   @Get()
   getUsers(){
     return this.databaseService.getAll();

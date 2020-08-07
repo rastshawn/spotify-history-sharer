@@ -17,6 +17,7 @@ import Login from '@/components/Login';
 import Logout from '@/components/Logout';
 import SpotifyConnect from '@/components/SpotifyConnect';
 const router = new VueRouter({
+  mode: 'history',
   routes: [
     {
       path: '/',
