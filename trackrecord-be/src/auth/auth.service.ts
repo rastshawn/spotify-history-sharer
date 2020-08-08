@@ -3,8 +3,11 @@ import { Injectable, HttpService } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 
+
+
 @Injectable()
 export class AuthService {
+  private currentCode;
   constructor(private httpService: HttpService, private usersService: UsersService, private jwtService: JwtService) {}
 
   // // called by local strategy
@@ -86,5 +89,38 @@ export class AuthService {
     let result = await this.httpService.request(call).toPromise();
   
     return result.data;
+  }
+
+  async getServerAuthCode() {
+    if (this.currentCode && this.currentCode.expiresAt > Date.now()){
+      return this.currentCode.code;
+    } else {
+      const call = {
+        method: 'post' as any,
+        url : 'https://accounts.spotify.com/api/token',
+        headers: {
+            'Authorization' : 'Basic ' + (new Buffer(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')),
+            'Content-Type' : 'application/x-www-form-urlencoded'
+        },
+        params: {
+            'grant_type': 'client_credentials'
+        },
+      };
+
+      let result = await this.httpService.request(call).toPromise();
+
+      this.currentCode = {
+        'code': result.data.access_token,
+        'expiresAt': this.getExpiryDate(result.data.expires_in)
+      };
+
+      return this.currentCode.code;
+    }
+  }
+
+  getExpiryDate(expiresIn) {
+    // return the actual date/time the token expires.
+    // expiresIn, from spotify, is number of seconds until it expires.
+    return new Date(Date.now() + expiresIn*1000);
   }
 }

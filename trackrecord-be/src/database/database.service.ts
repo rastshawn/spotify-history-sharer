@@ -38,11 +38,11 @@ const databaseConnection = mysql.createPool(mysqlOptions);
 
 @Injectable()
 export class DatabaseService {
-  private pool = databaseConnection;
+  //private pool = databaseConnection;
 
     addUser(user: User): Promise<User>{
         return new Promise((resolve, reject) => {
-            this.pool.query(
+            databaseConnection.query(
                 `INSERT INTO Users(GoogleUserID) VALUES ('${user.googleAccount.userID}');`,
                     (error, results, fields) => {
                         if (error) {
@@ -93,16 +93,18 @@ export class DatabaseService {
         })  
     }
 
-    getHistoryByGoogleID(googleID, start, end) {
+    getHistoryByGoogleID(googleID, start=null, end=null) {
         return new Promise((resolve, reject) => {
             let q = `SELECT SpotifyTrackID, PlayedAt FROM Listens WHERE GoogleUserID = '${googleID}'`;
             if (start && end) {
-                q += `AND PlayedAt BETWEEN ${this.pool.escape(start)} AND ${this.pool.escape(end)}`;
+                const startDate = new Date(parseInt(start));
+                const endDate = new Date(parseInt(end));
+                q += `AND PlayedAt BETWEEN ${databaseConnection.escape(startDate)} AND ${databaseConnection.escape(endDate)}`;
             }
             q += ' ORDER BY PlayedAt DESC;';
 
             console.log(q);
-            this.pool.query(q, (error, results, fields) => {
+            databaseConnection.query(q, (error, results, fields) => {
                 if (error) reject(error);
                 else {
                     resolve(results);
@@ -116,7 +118,7 @@ export class DatabaseService {
             // TODO check if user does not exist
             let q = `SELECT * FROM Users;`;
 
-            this.pool.query(q, (error, results, fields) => {
+            databaseConnection.query(q, (error, results, fields) => {
                 if (error) reject(error);
                 else {
                     

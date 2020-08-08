@@ -2,59 +2,13 @@
 import { Injectable, HttpService } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { DatabaseService } from 'src/database/database.service';
+import { AuthService } from 'src/auth/auth.service';
+import { PassportModule } from '@nestjs/passport';
 
 @Injectable()
 export class SongDataService {
-  constructor(private httpService: HttpService, private usersService: UsersService, private jwtService: JwtService) {}
-
-  // // called by local strategy
-  // async validateUser(username: string, pass: string): Promise<any> {
-  //   const user = await this.usersService.findOne(username);
-  //   if (user && user.password === pass) {
-  //     const { password, ...result } = user;
-  //     return result;
-  //   }
-  //   return null;
-  // }
-
-  // Old, for local strategy
-  // async login(user: any) {
-  //   // Payload should consist of the spotify and google IDs if available
-  //   const payload = { username: user.username, sub: user.userId };
-  //   return {
-  //     access_token: this.jwtService.sign(payload),
-  //   };
-  // }
-
-  async googleLogin(idToken) {
-    // TODO try/catch
-    const googleUserID = await this.getGoogleUserIDFromAuthToken(idToken);
-    const user = await this.usersService.getUserByGoogleID(googleUserID);
-    
-    console.log(user);
-
-    if (user) {
-      return {
-        access_token: this.jwtService.sign({user: user}),
-      }
-    } else {
-      // user does not exist in database
-    }
-  }
-
-
-
-  // TODO POSSIBLY THE SAME AS getGoogleAuthToken 
-  async getGoogleUserIDFromAuthToken(authToken) {
-    try {
-      const response = await this.httpService.get(
-        `https://oauth2.googleapis.com/tokeninfo?id_token=${authToken}`
-      ).toPromise();
-      return response.data.sub;
-    } catch(e) {
-      // TODO
-    }
-  }
+  constructor(private httpService: HttpService, private databaseService: DatabaseService, private jwtService: JwtService, private authService: AuthService) {}
 
 
   async getSpotifyAccessCode(loginAuthCode: string, userID: string){
@@ -87,4 +41,82 @@ export class SongDataService {
   
     return result.data;
   }
+
+  async getHistory(userID, from, to) {
+    
+    const databaseSongList = 
+      await this.databaseService.getHistoryByGoogleID(userID, from, to) as Array<DatabaseSpotifyTrack>;
+  
+    if (databaseSongList.length == 0){
+      return [];
+    }
+
+    const spotifyTrackInfo = 
+      await this.getSpotifyTracksInfo(databaseSongList);
+
+    // copy play history data into spotify track info
+    for (let i = 0; i<spotifyTrackInfo.length; i++) {
+      spotifyTrackInfo[i].PlayedAt = databaseSongList[i].PlayedAt;
+    }
+
+    return spotifyTrackInfo;
+    
+  }
+
+  async getSpotifyTracksInfo(trackIDs: Array<DatabaseSpotifyTrack>) {
+    // service can only handle 50 at a time; batch
+
+    const authCode = await this.authService.getServerAuthCode();
+
+    if (trackIDs.length < 50) {
+
+      const commaSeparatedList = trackIDs.map(track => track.SpotifyTrackID).join();
+      const call = {
+        method: 'get' as any,
+        url: `https://api.spotify.com/v1/tracks?ids=${commaSeparatedList}`,
+        // qs: { // query string params
+        //   ids: commaSeparatedList
+        // },
+        headers: {
+          'Authorization': 'Bearer ' + authCode,
+        }
+      };
+
+      try {
+        const apiResponse = await this.httpService.request(call).toPromise();
+        return apiResponse.data.tracks;
+      } catch (e) {
+        console.log(call);
+        console.log(e);
+        return []; // TODO
+      }
+    } else {
+      let first50 = [];
+			let remaining = [];
+			
+			for (let i = 0; i<trackIDs.length; i++){
+				if (i<49){
+					first50.push(trackIDs[i]);
+				} else {
+					remaining.push(trackIDs[i]);
+				}
+      }
+      
+      const results = await Promise.all([
+				this.getSpotifyTracksInfo(first50),
+				this.getSpotifyTracksInfo(remaining)
+      ]);
+      
+      return results[0].concat(results[1]);
+    }
+
+  }
+
+
+
+}
+
+export interface DatabaseSpotifyTrack {
+  SpotifyTrackID: string;
+  PlayedAt: string;
 }

@@ -8,6 +8,7 @@ import { jwtConstants } from '../auth/constants';
 //import { JwtStrategy } from './jwt.strategy';
 import { DatabaseModule } from '../database/database.module';
 import { SongDataService } from './song-data.service';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { SongDataService } from './song-data.service';
     DatabaseModule,
     PassportModule,
     UsersModule,
+    AuthModule,
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '2h' },

@@ -4,11 +4,7 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import {DatabaseService} from '../database/database.service'
 
-function getExpiryDate(expiresIn) {
-  // return the actual date/time the token expires.
-  // expiresIn, from spotify, is number of seconds until it expires.
-  return new Date(Date.now() + expiresIn*1000);
-}
+
 
 @Controller('/auth')
 export class AuthController {
@@ -49,7 +45,7 @@ export class AuthController {
       // update user in DB with new spotify access token
       let spotifyAuth = {
         'accessToken' : accessCodeResponse.access_token,
-        'expiresAt' : getExpiryDate(accessCodeResponse.expires_in), // num seconds 
+        'expiresAt' : this.authService.getExpiryDate(accessCodeResponse.expires_in), // num seconds 
         'refreshToken' : accessCodeResponse.refresh_token // for getting new tokens
       };
 
