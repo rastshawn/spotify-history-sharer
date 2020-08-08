@@ -36,6 +36,7 @@ export class AuthController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('/spotify/saveCode')
   async saveSpotifyCode(@Body() body) {
     body = body.body;

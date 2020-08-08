@@ -74,7 +74,36 @@ export default {
     }
 
     this.tracks = tracks;
+  },
+  methods: {
+    async loadTracks() {
+      let url = `/api/songData/${localStorage.getItem("googleUserID")}}/last50`;
+      if (this.fromTime && this.toTime) {
+        url += `?from=${this.fromTimeMillis}&to=${this.toTimeMillis}`;
+      }
+      const responseJson = await makeCall(
+        url,
+        'GET', 
+        true // sets to json
+      );
+      
+
+      let tracks = [];
+
+      for (let i in responseJson.items) {
+        let t = responseJson.items[i];
+        let track = {
+          "title" : t.track.name,
+          "artwork" : t.track.album.images[0].url,
+          "date" : t.played_at,
+          "artists" : t.track.album.artists
+        };
+
+        tracks.push(track);
+      }
+
+      this.tracks = tracks;
+    }
   }
-  
 };
 </script>
