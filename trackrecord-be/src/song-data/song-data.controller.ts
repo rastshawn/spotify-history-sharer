@@ -11,8 +11,8 @@ export class SongDataController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/:userID/last50')
-  async getLast50() {
-
+  async getLast50(@Param() params) {
+    return this.songDataService.getLast50(params.userID);
   }
 
   @UseGuards(JwtAuthGuard)

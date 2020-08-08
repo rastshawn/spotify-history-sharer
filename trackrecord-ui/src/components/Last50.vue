@@ -30,6 +30,7 @@
 </template>
 
 <script>
+import {makeCall} from '@/services/web.service.js';
 export default {
   data: () => ({
     headers: [
@@ -47,37 +48,41 @@ export default {
     tracks: []
   }),
   created: async function(/*event*/) {
-    const response = await fetch(
-      "https://trackrecordlive.shawnrast.com/users/114453869888691414495/last50RAW",
-      {
-        method: 'GET',
-        mode: 'cors',
-        cache: 'no-cache',
-        headers: {
-          'Content-Type' : 'application/json'
-        }
-      }
-    );
-    const responseJson = await response.json();
+    // const response = await fetch(
+    //   "https://trackrecordlive.shawnrast.com/users/114453869888691414495/last50RAW",
+    //   {
+    //     method: 'GET',
+    //     mode: 'cors',
+    //     cache: 'no-cache',
+    //     headers: {
+    //       'Content-Type' : 'application/json'
+    //     }
+    //   }
+    // );
+    // const responseJson = await response.json();
     
-    let tracks = [];
-    for (let i in responseJson.items) {
-      let t = responseJson.items[i];
-      let track = {
-        "title" : t.track.name,
-        "artwork" : t.track.album.images[0].url,
-        "date" : t.played_at,
-        "artists" : t.track.album.artists
-      };
+    // let tracks = [];
+    // for (let i in responseJson.items) {
+    //   let t = responseJson.items[i];
+    //   let track = {
+    //     "title" : t.track.name,
+    //     "artwork" : t.track.album.images[0].url,
+    //     "date" : t.played_at,
+    //     "artists" : t.track.album.artists
+    //   };
 
-      tracks.push(track);
-    }
+    //   tracks.push(track);
+    // }
 
-    this.tracks = tracks;
+    // this.tracks = tracks;
+    this.loadTracks();
+  },
+  activated () {
+    this.loadTracks();
   },
   methods: {
     async loadTracks() {
-      let url = `/api/songData/${localStorage.getItem("googleUserID")}}/last50`;
+      let url = `/api/songData/${localStorage.getItem("googleUserID")}/last50`;
       if (this.fromTime && this.toTime) {
         url += `?from=${this.fromTimeMillis}&to=${this.toTimeMillis}`;
       }

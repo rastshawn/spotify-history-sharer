@@ -11,36 +11,6 @@ export class SongDataService {
   constructor(private httpService: HttpService, private databaseService: DatabaseService, private jwtService: JwtService, private authService: AuthService) {}
 
 
-  async getSpotifyAccessCode(loginAuthCode: string, userID: string){
-    // get token
-    let call = {
-      method: 'post' as any,
-      url : 'https://accounts.spotify.com/api/token',
-      headers: {
-          'Authorization' : 'Basic ' + (new Buffer(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')),
-          'Content-Type' : 'application/x-www-form-urlencoded'
-      },
-      params: {
-          'grant_type': 'authorization_code',
-          'code' : loginAuthCode,
-          'redirect_uri' : process.env.APP_HOST + '/SpotifyConnect',
-      },
-    };
-
-    // sample response
-    /*
-      data: {
-        access_token: '*****',
-        token_type: 'Bearer',
-        expires_in: 3600,
-        refresh_token: '*****',
-        scope: 'user-read-recently-played'
-      }
-    */
-    let result = await this.httpService.request(call).toPromise();
-  
-    return result.data;
-  }
 
   async getHistory(userID, from, to) {
     
@@ -66,7 +36,7 @@ export class SongDataService {
   async getSpotifyTracksInfo(trackIDs: Array<DatabaseSpotifyTrack>) {
     // service can only handle 50 at a time; batch
 
-    const authCode = await this.authService.getServerAuthCode();
+    const authCode = await this.authService.getSpotifyServerAuthCode();
 
     if (trackIDs.length < 50) {
 
@@ -109,6 +79,21 @@ export class SongDataService {
       
       return results[0].concat(results[1]);
     }
+
+  }
+
+  async getLast50(userID) {
+    const authCode = await this.authService.fetchSpotifyAccessCode(userID);
+    let call = {
+      method: 'get' as any,
+      url: 'https://api.spotify.com/v1/me/player/recently-played?limit=50',
+      headers: {
+        'Authorization': 'Bearer ' + authCode
+      }	
+    };
+
+    const response = await this.httpService.request(call).toPromise(); 
+    return response.data;
 
   }
 

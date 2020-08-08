@@ -2,13 +2,15 @@
 import { Injectable, HttpService } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { DatabaseService } from 'src/database/database.service';
+import { User } from 'src/types/user.dto';
 
 
 
 @Injectable()
 export class AuthService {
   private currentCode;
-  constructor(private httpService: HttpService, private usersService: UsersService, private jwtService: JwtService) {}
+  constructor(private httpService: HttpService, private databaseService: DatabaseService, private jwtService: JwtService) {}
 
   // // called by local strategy
   // async validateUser(username: string, pass: string): Promise<any> {
@@ -32,9 +34,9 @@ export class AuthService {
   async googleLogin(idToken) {
     // TODO try/catch
     const googleUserID = await this.getGoogleUserIDFromAuthToken(idToken);
-    const user = await this.usersService.getUserByGoogleID(googleUserID);
+    const user = await this.databaseService.getUserByGoogleID(googleUserID);
     
-    console.log(user);
+
 
     if (user) {
       return {
@@ -59,8 +61,57 @@ export class AuthService {
     }
   }
 
+  async fetchSpotifyAccessCode(userID) {
+    const user = await this.databaseService.getUserByGoogleID(userID);
+    const now = new Date();
+    if (user.SpotifyAuth.expiresAt > now){
+      return user.SpotifyAuth.accessToken;
+    } else {
+      const refreshResponse = await this.refreshSpotifyAccessCode(userID);
+      return refreshResponse.SpotifyAuth.accessToken;
+    }
+  }
 
-  async getSpotifyAccessCode(loginAuthCode: string, userID: string){
+  async refreshSpotifyAccessCode(userID: string) {
+    const user = await this.databaseService.getUserByGoogleID(userID);
+    let call = {
+      method: 'post' as any,
+      url : 'https://accounts.spotify.com/api/token',
+      headers: {
+          'Authorization' : 'Basic ' + (new Buffer(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')),
+          'Content-Type' : 'application/x-www-form-urlencoded'
+      },
+      params: {
+          'grant_type': 'refresh_token',
+          'refresh_token' : user.SpotifyAuth.refreshToken
+      },
+    };
+
+    // sample response
+    /*
+      data: {
+        access_token: '*****',
+        token_type: 'Bearer',
+        expires_in: 3600,
+        scope: 'user-read-recently-played'
+      }
+    */
+    let result = await this.httpService.request(call).toPromise();
+    const accessCodeResponse = result.data;
+
+    let spotifyAuth = {
+      'accessToken' : accessCodeResponse.access_token,
+      'expiresAt' : this.getExpiryDate(accessCodeResponse.expires_in), // num seconds 
+      'refreshToken' : user.SpotifyAuth.refreshToken
+    };
+
+    const currentUser = await this.databaseService.getUserByGoogleID(userID)
+    currentUser.SpotifyAuth = spotifyAuth;
+
+    return this.databaseService.updateUser(currentUser);
+  }
+
+  async saveNewSpotifyAccessCode(loginAuthCode: string, userID: string){
     // get token
     let call = {
       method: 'post' as any,
@@ -87,11 +138,23 @@ export class AuthService {
       }
     */
     let result = await this.httpService.request(call).toPromise();
-  
-    return result.data;
+    const accessCodeResponse = result.data;
+
+    let spotifyAuth = {
+      'accessToken' : accessCodeResponse.access_token,
+      'expiresAt' : this.getExpiryDate(accessCodeResponse.expires_in), // num seconds 
+      'refreshToken' : accessCodeResponse.refresh_token // for getting new tokens
+    };
+
+    const currentUser = await this.databaseService.getUserByGoogleID(userID)
+    currentUser.SpotifyAuth = spotifyAuth;
+
+    return this.databaseService.updateUser(currentUser);
   }
 
-  async getServerAuthCode() {
+  
+
+  async getSpotifyServerAuthCode() {
     if (this.currentCode && this.currentCode.expiresAt > Date.now()){
       return this.currentCode.code;
     } else {

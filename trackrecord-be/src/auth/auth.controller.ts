@@ -40,19 +40,10 @@ export class AuthController {
       // const response = await this.authService.googleLogin(body.idtoken);
       // return response;
       const accessCodeResponse = 
-        await this.authService.getSpotifyAccessCode(body.code, body.userID);
+        await this.authService.saveNewSpotifyAccessCode(body.code, body.userID);
 
-      // update user in DB with new spotify access token
-      let spotifyAuth = {
-        'accessToken' : accessCodeResponse.access_token,
-        'expiresAt' : this.authService.getExpiryDate(accessCodeResponse.expires_in), // num seconds 
-        'refreshToken' : accessCodeResponse.refresh_token // for getting new tokens
-      };
 
-      const currentUser = await this.databaseService.getUserByGoogleID(body.userID)
-      currentUser.SpotifyAuth = spotifyAuth;
-
-      return this.databaseService.updateUser(currentUser);
+      return accessCodeResponse;
     } else {
       throw new HttpException("bad request", 400);
     }
