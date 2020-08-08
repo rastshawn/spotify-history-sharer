@@ -21,8 +21,11 @@ export default {
           code: this.$route.query.code
         };
 
-        const saveCodeResponse = await this.makeCall('/api/auth/spotify/saveCode', 'POST', true, body);
+        const saveCodeResponse = await makeCall('/api/auth/spotify/saveCode', 'POST', true, body);
         
+        // TODO check errors
+        // if successful, redirect to a logged in page.
+        this.$router.push('Last50');
       } else {
         // no auth code, redirect to the auth link
         window.location.href=this.link;

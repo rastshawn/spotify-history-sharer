@@ -61,13 +61,13 @@ export class DatabaseService {
 
             let q = `UPDATE Users SET
                 SpotifyAccessToken = '${user.SpotifyAuth.accessToken}',
-                SpotifyAuthExpiration = ${this.pool.escape(user.SpotifyAuth.expiresAt)},
+                SpotifyAuthExpiration = ${databaseConnection.escape(user.SpotifyAuth.expiresAt)},
                 SpotifyRefreshToken = '${user.SpotifyAuth.refreshToken}'
                 WHERE GoogleUserID = '${user.GoogleAccount.userID}';`;
 
             
 
-                this.pool.query(q, (error, results, fields) => {
+                databaseConnection.query(q, (error, results, fields) => {
                 if (error) reject(error);
                 else {
                     resolve(user.GoogleAccount.userID);
@@ -81,7 +81,7 @@ export class DatabaseService {
             // TODO check if user does not exist
             let q = `SELECT * FROM Users WHERE GoogleUserID = '${googleID}';`;
 
-            this.pool.query(q, (error, results, fields) => {
+            databaseConnection.query(q, (error, results, fields) => {
                 if (error) reject(error);
                 else {
                     

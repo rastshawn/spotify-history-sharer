@@ -55,4 +55,36 @@ export class AuthService {
       // TODO
     }
   }
+
+
+  async getSpotifyAccessCode(loginAuthCode: string, userID: string){
+    // get token
+    let call = {
+      method: 'post' as any,
+      url : 'https://accounts.spotify.com/api/token',
+      headers: {
+          'Authorization' : 'Basic ' + (new Buffer(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')),
+          'Content-Type' : 'application/x-www-form-urlencoded'
+      },
+      params: {
+          'grant_type': 'authorization_code',
+          'code' : loginAuthCode,
+          'redirect_uri' : process.env.APP_HOST + '/SpotifyConnect',
+      },
+    };
+
+    // sample response
+    /*
+      data: {
+        access_token: '*****',
+        token_type: 'Bearer',
+        expires_in: 3600,
+        refresh_token: '*****',
+        scope: 'user-read-recently-played'
+      }
+    */
+    let result = await this.httpService.request(call).toPromise();
+  
+    return result.data;
+  }
 }
