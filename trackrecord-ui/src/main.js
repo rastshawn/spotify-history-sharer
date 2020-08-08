@@ -5,6 +5,8 @@ import VueRouter from 'vue-router';
 import DatetimePicker from 'vuetify-datetime-picker';
 import GoogleLogin from 'vue-google-login';
 
+import jwt_decode from 'jwt-decode';
+
 Vue.use(VueRouter);
 Vue.use(DatetimePicker);
 Vue.use(GoogleLogin);
@@ -29,7 +31,8 @@ const router = new VueRouter({
       name: 'Last50',
       component: Last50, 
       meta: {
-        requiresAuth: true
+        requiresAuth: true,
+        requiresSpotify: true
       }
     },
     {
@@ -37,7 +40,8 @@ const router = new VueRouter({
       name: 'TimeMachine',
       component: TimeMachine, 
       meta: {
-        requiresAuth: true
+        requiresAuth: true,
+        requiresSpotify: true
       }
     },
     {
@@ -64,15 +68,41 @@ const router = new VueRouter({
 // https://www.digitalocean.com/community/tutorials/how-to-set-up-vue-js-authentication-and-route-handling-using-vue-router
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (localStorage.getItem('jwt') == null) {
+    const jwt = localStorage.getItem('jwt');
+    // is there jwt
+    if (!jwt) {
       next({
         path:'/Login'
-      })
-    } else {
-      next()
+      });
+      return;
     }
+
+    const decoded = jwt_decode(jwt);
+
+    // is it expired
+    if ((decoded.exp < Date.now()/1000)) {
+      next({
+        path:'/Login'
+      });
+      return;
+    }
+
+    // is spotify auth present when required
+    if (to.matched.some(record => record.meta.requiresSpotify)){
+      if (decoded.user.spotifyAuthInfo && decoded.user.spotifyAuthInfo.accessToken) {
+        next();
+        return;
+      } else {
+        next({
+          path: '/SpotifyConnect'
+        });
+        return;
+      }
+    }
+
+    next();
   } else {
-    next()
+    next();
   }
 });
 
