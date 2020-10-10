@@ -17,6 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: any) {
     // Whatever is returned from this function is the jwt payload
     // Add google/spotify IDs
+    console.log("JWT");
     return { userId: payload.sub, username: payload.username };
   }
 }

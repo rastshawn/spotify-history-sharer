@@ -2,6 +2,7 @@ import { Controller, Get, UseGuards, Post, Request, Body, HttpException, Param, 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {DatabaseService} from '../database/database.service'
 import { SongDataService } from './song-data.service';
+import { LocalAuthGuard } from '../auth/local-auth.guard';
 
 
 
@@ -35,6 +36,12 @@ export class SongDataController {
   }
 
 
+  // unsecured endpoint for fetcher TODO
+  @UseGuards(LocalAuthGuard)
+  @Get('/:userID/fetcher')
+  async fetcher(@Param() params) {
+    return this.songDataService.getLast50(params.userID);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('/:userID/last50')
