@@ -1,3 +1,7 @@
+constants.ts
+
+*.png
+
 # Logs
 logs
 *.log

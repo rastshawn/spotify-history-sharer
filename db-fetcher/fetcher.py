@@ -151,8 +151,9 @@ def addLast50ToDatabase(userID):
         # https://docs.python.org/3/library/http.client.html#examples
         #TODO do this without using the server - link directly to spotify
         url = sys.argv[3]
+        token = sys.argv[4]
         conn = http.client.HTTPConnection(url)
-        conn.request("GET", "/users/" + userID + "/last50RAW")
+        conn.request("GET", "/songData/" + userID + "/fetcher?access_token="+token)
         response = conn.getresponse()
         last50JSON = response.read().decode('utf-8')
         conn.close()
@@ -182,6 +183,7 @@ def addLast50ToDatabase(userID):
 
 
     last50 = getLast50Node(userID)
+    print(last50)
     items = last50['items']
     itemsToAdd = []
 
