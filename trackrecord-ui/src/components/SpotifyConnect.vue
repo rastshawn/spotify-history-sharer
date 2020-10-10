@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import {makeCall} from '@/services/web.service.js';
+import {updateSpotifyAccount} from '@/services/web.service.js';
 const clientID = process.env.VUE_APP_SPOTIFY_CLIENT_ID;
 const host = process.env.VUE_APP_HOST;
 export default {
@@ -21,12 +21,12 @@ export default {
           code: this.$route.query.code
         };
 
-        const saveCodeResponse = await makeCall('/api/auth/spotify/saveCode', 'POST', true, body);
+        await updateSpotifyAccount(body);
         
         // TODO check errors
         // if successful, redirect to a logged in page.
         this.$router.push('Last50');
-      } else if (this.$route.error="access_denied"){
+      } else if (this.$route.error=="access_denied"){
         window.location.href="/";
       } else {
         // no auth code, redirect to the auth link

@@ -44,6 +44,16 @@ export class AuthService {
       }
     } else {
       // user does not exist in database
+      // make new user
+      const newUser = new User({
+        userID : googleUserID,
+      }, null); // spotify info is null 
+
+      // add user to database
+      await this.databaseService.addUser(newUser);
+
+      // retry login
+      return this.googleLogin(idToken);
     }
   }
 
@@ -149,7 +159,12 @@ export class AuthService {
     const currentUser = await this.databaseService.getUserByGoogleID(userID)
     currentUser.SpotifyAuth = spotifyAuth;
 
-    return this.databaseService.updateUser(currentUser);
+    const updatedUser = await this.databaseService.updateUser(currentUser);
+
+    // send a new JWT token - this allows the user to go right into the app without having to log out and back in
+    return {
+      access_token: this.jwtService.sign({user: updatedUser}),
+    }
   }
 
   
