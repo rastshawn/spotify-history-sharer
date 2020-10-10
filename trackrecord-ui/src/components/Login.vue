@@ -1,10 +1,26 @@
 <template>
   <v-container>
-    <div>
-        <GoogleLogin :params="googleAuth" :renderParams="renderParams" :onSuccess="onSuccess" :onFailure="onFailure" :logoutButton="false"></GoogleLogin>
-      <button v-on:click="helloWorld()">Test credentials</button>
+    <h1>Login</h1>
+    <v-row>
+    <v-card>
+      <p>The flow is in progress - welcome to the prototype!</p>
+      <p>Logging in:</p>
+      <ol>
+        <li>Whether the button says you're signed in already or not, click "Sign in with Google".</li>
+        <li>When you're back on the page (if you had to leave at all), click "Connect to Spotify" You can skip this if you're sure you've already connected your account, but it doesn't hurt anything.</li>
+        <li>When all of that is finished, go ahead and click the Last50 link in the sidebar. You should see your recent Spotify history if your accounts connected properly.</li>
+      </ol>
+    </v-card>
+    </v-row>
+    <v-row>
+    <v-card>
+
+      <GoogleLogin :params="googleAuth" :renderParams="renderParams" :onSuccess="onSuccess" :onFailure="onFailure" :logoutButton="false"></GoogleLogin>
+      <!--<button v-on:click="helloWorld()">Test credentials</button>-->
       <router-link to="/SpotifyConnect">Connect to Spotify</router-link>
-    </div>
+
+    </v-card>
+    </v-row>
   </v-container>
 </template>
 

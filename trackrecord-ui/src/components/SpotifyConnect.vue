@@ -26,6 +26,8 @@ export default {
         // TODO check errors
         // if successful, redirect to a logged in page.
         this.$router.push('Last50');
+      } else if (this.$route.error="access_denied"){
+        window.location.href="/";
       } else {
         // no auth code, redirect to the auth link
         window.location.href=this.link;

@@ -13,8 +13,10 @@ Vue.use(GoogleLogin);
 
 
 import Last50 from '@/components/Last50';
+import DemoLast50 from '@/components/DemoLast50';
 import Home from '@/components/Home';
 import TimeMachine from '@/components/TimeMachine';
+import DemoTM from '@/components/DemoTM';
 import Login from '@/components/Login';
 import Logout from '@/components/Logout';
 import SpotifyConnect from '@/components/SpotifyConnect';
@@ -61,6 +63,16 @@ const router = new VueRouter({
       meta: {
         requiresAuth: true
       }
+    },
+    {
+      path: '/DemoLast50',
+      name: 'DemoLast50',
+      component: DemoLast50
+    },
+    {
+      path: '/DemoTM',
+      name: 'DemoTM',
+      component: DemoTM
     },
   ]
 });

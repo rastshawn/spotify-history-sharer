@@ -18,7 +18,7 @@ module.exports = {
 
         let json = await response.json();
         localStorage.setItem("jwt", json.access_token);
-        localStorage.setItem("googleUserID", googleUser.Da);
+        localStorage.setItem("googleUserID", googleUser.Ca); // if this doesn't work in a month, find a new solution
         return json;
     },
 

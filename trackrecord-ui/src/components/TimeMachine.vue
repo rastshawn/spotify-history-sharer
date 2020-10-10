@@ -1,5 +1,7 @@
 <template>
   <v-container>
+    <h1>Time Machine</h1>
+      <v-row>
     <v-col cols="6">
 
         <v-datetime-picker label="From" v-model="fromTime"></v-datetime-picker>
@@ -8,6 +10,7 @@
   <v-col cols="6">
         <v-datetime-picker label="To" v-model="toTime"></v-datetime-picker>
   </v-col>
+  </v-row>
     <v-btn v-on:click="loadTracks()">LOAD</v-btn>
     <v-data-table
     :headers="headers"
@@ -40,7 +43,7 @@ import {makeCall} from '@/services/web.service.js';
 
 export default {
   props: {
-    //googleUserID, // 114453869888691414495
+    isDemo: Boolean
   },
   data: () => ({
     headers: [
@@ -74,6 +77,13 @@ export default {
         return this.toTime.getTime();
       }
       return null;
+    },
+    googleUserID() {
+      if (this.isDemo) {
+        return process.env.VUE_APP_DEMO_GOOGLE_ID;
+      } else {
+        return localStorage.getItem("googleUserID");
+      }
     }
   },
   created: async function(/*event*/) {
@@ -81,7 +91,7 @@ export default {
   },
   methods: {
     async loadTracks() {
-      let url = `/api/songData/${localStorage.getItem("googleUserID")}/history`;
+      let url = `/api/songData/${this.googleUserID}/history`;
       if (this.fromTime && this.toTime) {
         url += `?from=${this.fromTimeMillis}&to=${this.toTimeMillis}`;
       }

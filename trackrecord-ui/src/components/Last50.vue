@@ -3,6 +3,7 @@
     <!--
     <v-btn v-on:click="loadTracks">Load</v-btn>
     -->
+    <h1>Recent history</h1>
     <v-data-table
     :headers="headers"
     :items="tracks"
@@ -32,6 +33,9 @@
 <script>
 import {makeCall} from '@/services/web.service.js';
 export default {
+  props: {
+    isDemo: Boolean
+  },
   data: () => ({
     headers: [
       { text: 'Artwork', value: 'artwork', sortable:false},
@@ -80,9 +84,18 @@ export default {
   activated () {
     this.loadTracks();
   },
+  computed: {
+    googleUserID() {
+      if (this.isDemo) {
+        return process.env.VUE_APP_DEMO_GOOGLE_ID;
+      } else {
+        return localStorage.getItem("googleUserID");
+      }
+    }
+  },
   methods: {
     async loadTracks() {
-      let url = `/api/songData/${localStorage.getItem("googleUserID")}/last50`;
+      let url = `/api/songData/${this.googleUserID}/last50`;
       if (this.fromTime && this.toTime) {
         url += `?from=${this.fromTimeMillis}&to=${this.toTimeMillis}`;
       }
