@@ -10,6 +10,7 @@
     :disable-pagination="true"
     class="elevation-1"
     :hide-default-footer="true"
+    :loading="loading"
     >
       <template v-slot:item.artwork={item}>
         <v-img :src="item.artwork"
@@ -49,7 +50,8 @@ export default {
     components: {
 
     },
-    tracks: []
+    tracks: [],
+    loading: false,
   }),
   created: async function(/*event*/) {
     // const response = await fetch(
@@ -95,10 +97,12 @@ export default {
   },
   methods: {
     async loadTracks() {
+      this.loading = true;
       let url = `/api/songData/${this.googleUserID}/last50`;
       if (this.fromTime && this.toTime) {
         url += `?from=${this.fromTimeMillis}&to=${this.toTimeMillis}`;
       }
+      try {
       const responseJson = await makeCall(
         url,
         'GET', 
@@ -119,8 +123,12 @@ export default {
 
         tracks.push(track);
       }
-
+      this.loading = false;
       this.tracks = tracks;
+      } catch (e) {
+        console.log(e);
+        this.loading = false;
+      }
     }
   }
 };

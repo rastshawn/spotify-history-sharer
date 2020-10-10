@@ -18,6 +18,7 @@
     :disable-pagination="true"
     class="elevation-1"
     :hide-default-footer="true"
+    :loading="loading"
     >
       <template v-slot:item.artwork={item}>
         <v-img :src="item.artwork"
@@ -52,6 +53,7 @@ export default {
       { text: 'Artists', value: 'artists' },
       { text: 'Date', value: 'date' },
     ],
+    loading: false,
     footerProps: {
       
     },
@@ -91,10 +93,12 @@ export default {
   },
   methods: {
     async loadTracks() {
+      this.loading = true;
       let url = `/api/songData/${this.googleUserID}/history`;
       if (this.fromTime && this.toTime) {
         url += `?from=${this.fromTimeMillis}&to=${this.toTimeMillis}`;
       }
+      try {
       const responseJson = await makeCall(
         url,
         'GET', 
@@ -116,6 +120,11 @@ export default {
       }
 
       this.tracks = tracks;
+      this.loading = false;
+      } catch (e) {
+        console.log(e);
+        this.loading = false;
+      }
     }
   }
   
