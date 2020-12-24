@@ -229,7 +229,7 @@ def addLast50ToDatabase(userID):
 def checkLocalDB():
     dbSemaphore.acquire()
 
-    users = db.query("Select GoogleUserID, NextHistoryUpdate from Users")
+    users = db.query("Select GoogleUserID, NextHistoryUpdate from Users where LoggingEnabled = true")
     
     overdue = []
     now = time.time()
