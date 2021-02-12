@@ -34,12 +34,22 @@ const makeCall = async function(endpoint, method='GET', json=false, body) {
 
 
 const sendAuthToken = async function(googleUser) {
+    // grab ID token
+    // This is because the object member that contains the token
+    // keeps inexplicably changing, breaking my code. 
+    // example - googleUser.wc.id_token one week, googleUser.uc.id_token the next
+    let id_token = '';
+    for (member in googleUser) {
+        if (googleUser[member].id_token) {
+            id_token = googleUser[member].id_token;
+        }
+    }
     const response = await fetch(
         `/api/auth/google/oauth`,
         {
             method: 'POST',
             body: JSON.stringify({
-                idtoken: googleUser.wc.id_token
+                idtoken: id_token
             }),
             cache: 'no-cache',
             headers: {
