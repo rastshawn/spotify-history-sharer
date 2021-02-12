@@ -94,10 +94,23 @@ export class SongDataService {
 
     const response = await this.httpService.request(call).toPromise(); 
     return response.data;
-
   }
 
+  async fetchPlaylists(userID) {
+    const spotifyAccountData = await this.authService.fetchSpotifyAccountData(userID);
+    
+    let call = {
+      method: 'get' as any,
+      url: 'https://api.spotify.com/v1/me/player/recently-played?limit=50',
+      headers: {
+        'Authorization': 'Bearer ' + spotifyAccountDataauthCode
+      }	
+    };
 
+    const response = await this.httpService.request(call).toPromise(); 
+    return response.data;
+  }
+  }
 
 }
 

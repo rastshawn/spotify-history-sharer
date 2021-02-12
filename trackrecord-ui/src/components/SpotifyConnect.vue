@@ -44,7 +44,7 @@ export default {
     link() {
 
       const userID = localStorage.getItem("googleUserID");
-      const scope = 'user-read-recently-played';
+      const scope = 'user-read-recently-played playlist-read-collaborative';
       const redirectURI = host + '/SpotifyConnect';
       return 'https://accounts.spotify.com/authorize' +
                         '?response_type=code' +

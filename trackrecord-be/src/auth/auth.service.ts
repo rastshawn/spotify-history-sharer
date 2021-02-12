@@ -82,6 +82,23 @@ export class AuthService {
     }
   }
 
+  async fetchSpotifyAccountData(userID: string) {
+    const authCode = await this.fetchSpotifyAccessCode(userID);
+    let call = {
+      method: 'get' as any,
+      url: 'https://api.spotify.com/v1/me',
+      headers: {
+        'Authorization': 'Bearer ' + authCode
+      }	
+    };
+
+    const response = await this.httpService.request(call).toPromise(); 
+    return {
+      authCode, 
+      spotifyUserID: response.data.id
+    }
+  }
+
   async refreshSpotifyAccessCode(userID: string) {
     const user = await this.databaseService.getUserByGoogleID(userID);
     let call = {
