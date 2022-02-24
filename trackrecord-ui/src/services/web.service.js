@@ -67,7 +67,7 @@ const sendAuthToken = async function(googleUser) {
         }
     }
     localStorage.setItem("jwt", json.access_token);
-    localStorage.setItem("googleUserID", googleUserID); 
+    localStorage.setItem("googleUserID", googleUserID); // if this doesn't work in a month, find a new solution
     return json;
 };
 const updateSpotifyAccount = async function(body) {
