@@ -60,6 +60,7 @@ const sendAuthToken = async function(googleUser) {
 
     let json = await response.json();
     let googleUserID = undefined;
+
     for (var prop in googleUser) {
         if (typeof googleUser[prop] == "string"){
             googleUserID = googleUser[prop];

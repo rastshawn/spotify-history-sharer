@@ -101,7 +101,7 @@ export class DatabaseService {
                 const endDate = new Date(parseInt(end));
                 q += `AND PlayedAt BETWEEN ${databaseConnection.escape(startDate)} AND ${databaseConnection.escape(endDate)}`;
             }
-            q += ' ORDER BY PlayedAt DESC;';
+            q += ' ORDER BY PlayedAt DESC LIMIT 1500;';
 
             console.log(q);
             databaseConnection.query(q, (error, results, fields) => {
